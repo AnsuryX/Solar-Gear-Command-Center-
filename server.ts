@@ -1,0 +1,169 @@
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import axios from 'axios';
+import { createServer as createViteServer } from 'vite';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const app = express();
+const PORT = 3000;
+
+app.use(cors());
+app.use(express.json());
+app.use(cookieParser());
+
+const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
+const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
+const META_APP_ID = process.env.META_APP_ID;
+const META_APP_SECRET = process.env.META_APP_SECRET;
+const APP_URL = process.env.APP_URL || 'http://localhost:3000';
+
+// --- LinkedIn Auth ---
+app.get('/api/auth/linkedin/url', (req, res) => {
+  const redirectUri = `${APP_URL}/api/auth/linkedin/callback`;
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: LINKEDIN_CLIENT_ID!,
+    redirect_uri: redirectUri,
+    scope: 'w_member_social profile openid',
+  });
+  res.json({ url: `https://www.linkedin.com/oauth/v2/authorization?${params}` });
+});
+
+app.get('/api/auth/linkedin/callback', async (req, res) => {
+  const { code } = req.query;
+  const redirectUri = `${APP_URL}/api/auth/linkedin/callback`;
+
+  try {
+    const response = await axios.post('https://www.linkedin.com/oauth/v2/accessToken', null, {
+      params: {
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        client_id: LINKEDIN_CLIENT_ID,
+        client_secret: LINKEDIN_CLIENT_SECRET,
+      }
+    });
+
+    const { access_token } = response.data;
+    
+    // In a real app, you'd store this in Firestore under the user doc
+    // For now, we pass it back to the client to store locally or send a success page
+    res.send(`
+      <html>
+        <body>
+          <script>
+            window.opener.postMessage({ type: 'OAUTH_SUCCESS', platform: 'linkedin', token: '${access_token}' }, '*');
+            window.close();
+          </script>
+          <p>LinkedIn Connected! Closing...</p>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    res.status(500).send('LinkedIn Auth Failed');
+  }
+});
+
+// --- Meta (Instagram) Auth ---
+app.get('/api/auth/meta/url', (req, res) => {
+  const redirectUri = `${APP_URL}/api/auth/meta/callback`;
+  const params = new URLSearchParams({
+    client_id: META_APP_ID!,
+    redirect_uri: redirectUri,
+    scope: 'instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement',
+    response_type: 'code',
+  });
+  res.json({ url: `https://www.facebook.com/v18.0/dialog/oauth?${params}` });
+});
+
+app.get('/api/auth/meta/callback', async (req, res) => {
+  const { code } = req.query;
+  const redirectUri = `${APP_URL}/api/auth/meta/callback`;
+
+  try {
+    const response = await axios.get('https://graph.facebook.com/v18.0/oauth/access_token', {
+      params: {
+        client_id: META_APP_ID,
+        client_secret: META_APP_SECRET,
+        redirect_uri: redirectUri,
+        code,
+      }
+    });
+
+    const { access_token } = response.data;
+
+    res.send(`
+      <html>
+        <body>
+          <script>
+            window.opener.postMessage({ type: 'OAUTH_SUCCESS', platform: 'instagram', token: '${access_token}' }, '*');
+            window.close();
+          </script>
+          <p>Meta Connected! Closing...</p>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    res.status(500).send('Meta Auth Failed');
+  }
+});
+
+// --- Direct Posting API ---
+app.post('/api/post/linkedin', async (req, res) => {
+  const { token, content, userId } = req.body;
+  try {
+    // 1. Get User Profile ID (URN)
+    const profileRes = await axios.get('https://api.linkedin.com/v2/userinfo', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const personUrn = `urn:li:person:${profileRes.data.sub}`;
+
+    // 2. Create Post
+    const postRes = await axios.post('https://api.linkedin.com/v2/ugcPosts', {
+      author: personUrn,
+      lifecycleState: 'PUBLISHED',
+      specificContent: {
+        'com.linkedin.ugc.ShareContent': {
+          shareCommentary: { text: content },
+          shareMediaCategory: 'NONE'
+        }
+      },
+      visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' }
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    res.json({ status: 'success', id: postRes.data.id });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', message: error.response?.data || error.message });
+  }
+});
+
+// Instagram API requires more complex flow (Page ID -> Instagram Account ID -> Media Container -> Publish)
+// For now, providing a simplified structure
+app.post('/api/post/instagram', async (req, res) => {
+  res.status(501).json({ message: 'Instagram posting requires a Business account and Page ID pairing. Contact support for full setup.' });
+});
+
+// --- Vite Integration ---
+if (process.env.NODE_ENV !== 'production') {
+  const vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: 'spa',
+  });
+  app.use(vite.middlewares);
+} else {
+  const distPath = path.join(__dirname, 'dist');
+  app.use(express.static(distPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
