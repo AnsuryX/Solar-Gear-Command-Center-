@@ -20,11 +20,12 @@ export const generateWeeklyStrategy = async (brandContext: string): Promise<Week
     Rules:
     1. LinkedIn content: Professional, technical, ROI focused.
     2. Instagram content: Visual, lifestyle, sustainability aesthetics.
-    3. Suggest a detailed "imagePrompt" for each post (e.g., "A wide shot of a commercial solar installation in Nairobi during a golden sunset, focusing on the crystalline panels").
-    4. Generate 7 specific posts total.
+    3. Google Business (GMB): Local updates, service focus, "near me" relevance.
+    4. Suggest a detailed "imagePrompt" for each post.
+    5. Generate 10 specific posts total across platforms.
     
     Return ONLY a JSON array of objects with keys: 
-    "day", "platform" ("linkedin" | "instagram"), "strategy", "content", "imagePrompt", "date" (YYYY-MM-DD).
+    "day", "platform" ("linkedin" | "instagram" | "gmb"), "strategy", "content", "imagePrompt", "date" (YYYY-MM-DD).
   `;
 
   try {

@@ -21,12 +21,16 @@ Nexus orchestrates 7-day content schedules with multi-platform intelligence.
 ### 2. Global Transmissions (Integrated Social)
 - **Direct Linked API:** Post professional insights via dedicated OAuth handles.
 - **Instagram/Meta Integration:** Direct Graph API connection for visual brand storytelling.
+- **Google Business Profile (GMB):** Automatically update your local presence with service updates and project highights.
 - **Transmission Queue:** A specialized review deck with "Image Strategy" sidebars for manual review when not in Auto-Pilot.
 
 ### 3. The Engine Room (Real Ads Intelligence)
 - **Auto-Growth:** Toggle autonomous campaign generation based on regional market signals.
-- **Atmospheric Pulse:** Logic that triggers Cooling Package ads when heatwaves are detected in regional forecasts.
-- **Logistics Guard:** Automatically pauses specific search strings if inventory falls below critical levels.
+- **Atmospheric Pulse:** Logic that triggers Cooling Package ads when heatwaves are detected in Nairobi or Doha.
+- **Logistics Guard:** Automatically pauses specific search strings if inventory for panels or inverters falls below threshold.
+
+### 4. Executive reporting (The Board Report)
+- **Zero-Touch Analysis:** Nexus synthesizes platform data into professional "Board Reports" that justify marketing spend without a manager's manual input.
 
 ## ⚙️ Intelligence Configuration (The Nexus Core)
 Configure your AI preferences in **System Config**:

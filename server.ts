@@ -19,7 +19,54 @@ const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
 const META_APP_ID = process.env.META_APP_ID;
 const META_APP_SECRET = process.env.META_APP_SECRET;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID; // Reusing for GMB OAuth
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET;
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
+
+// --- Google Business Profile (GMB) Auth ---
+app.get('/api/auth/gmb/url', (req, res) => {
+  const redirectUri = `${APP_URL}/api/auth/gmb/callback`;
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID!,
+    redirect_uri: redirectUri,
+    response_type: 'code',
+    scope: 'https://www.googleapis.com/auth/business.manage',
+    access_type: 'offline',
+    prompt: 'consent'
+  });
+  res.json({ url: `https://accounts.google.com/o/oauth2/v2/auth?${params}` });
+});
+
+app.get('/api/auth/gmb/callback', async (req, res) => {
+  const { code } = req.query;
+  const redirectUri = `${APP_URL}/api/auth/gmb/callback`;
+
+  try {
+    const response = await axios.post('https://oauth2.googleapis.com/token', {
+      code,
+      client_id: GOOGLE_CLIENT_ID,
+      client_secret: GOOGLE_CLIENT_SECRET,
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code',
+    });
+
+    const { access_token, refresh_token } = response.data;
+
+    res.send(`
+      <html>
+        <body>
+          <script>
+            window.opener.postMessage({ type: 'OAUTH_SUCCESS', platform: 'gmb', token: '${access_token}', refreshToken: '${refresh_token}' }, '*');
+            window.close();
+          </script>
+          <p>Google Business Linked! Closing...</p>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    res.status(500).send('Google Auth Failed');
+  }
+});
 
 // --- LinkedIn Auth ---
 app.get('/api/auth/linkedin/url', (req, res) => {
@@ -147,6 +194,23 @@ app.post('/api/post/linkedin', async (req, res) => {
 // For now, providing a simplified structure
 app.post('/api/post/instagram', async (req, res) => {
   res.status(501).json({ message: 'Instagram posting requires a Business account and Page ID pairing. Contact support for full setup.' });
+});
+
+app.post('/api/post/gmb', async (req, res) => {
+  const { token, content, locationId } = req.body;
+  try {
+    // In GMB API, locationId is like "locations/123456"
+    const response = await axios.post(`https://mybusiness.googleapis.com/v4/${locationId}/localPosts`, {
+      languageCode: "en-US",
+      summary: content,
+      postType: "STANDARD",
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    res.json({ status: 'success', id: response.data.name });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', message: "GMB Publication failed. Check Location permission." });
+  }
 });
 
 // --- Vite Integration ---

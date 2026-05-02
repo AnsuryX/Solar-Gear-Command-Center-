@@ -60,6 +60,7 @@ export default function ContentCalendar() {
   const [connections, setConnections] = useState({
     linkedin: !!localStorage.getItem('linkedin_token'),
     instagram: !!localStorage.getItem('instagram_token'),
+    gmb: !!localStorage.getItem('gmb_token'),
   });
 
   useEffect(() => {
@@ -103,7 +104,7 @@ export default function ContentCalendar() {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
-  const handleConnect = async (platform: 'linkedin' | 'meta') => {
+  const handleConnect = async (platform: 'linkedin' | 'meta' | 'gmb') => {
     try {
       const res = await fetch(`/api/auth/${platform}/url`);
       const { url } = await res.json();
@@ -248,6 +249,20 @@ export default function ContentCalendar() {
                {connections.instagram ? 'Instagram Linked' : 'Connect Instagram'}
              </span>
              <div className={cn("w-1.5 h-1.5 rounded-full", connections.instagram ? 'bg-green-500' : 'bg-solar-amber animate-pulse')} />
+         </button>
+
+         <button 
+           onClick={() => !connections.gmb && handleConnect('gmb')}
+           className={cn(
+             "flex-shrink-0 flex items-center gap-3 px-6 py-2.5 rounded-full border shadow-sm transition-all",
+             connections.gmb ? "bg-white border-solar-border" : "bg-solar-paper border-solar-border hover:bg-solar-border"
+           )}
+         >
+             <Globe size={14} className={connections.gmb ? "text-amber-600" : "text-solar-sage"} />
+             <span className="text-[10px] font-black uppercase tracking-widest text-solar-sage">
+               {connections.gmb ? 'GMB Linked' : 'Connect GMB'}
+             </span>
+             <div className={cn("w-1.5 h-1.5 rounded-full", connections.gmb ? 'bg-green-500' : 'bg-solar-amber animate-pulse')} />
          </button>
       </div>
 

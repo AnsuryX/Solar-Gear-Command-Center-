@@ -11,7 +11,13 @@ import {
   Linkedin,
   Globe,
   Facebook,
-  Zap
+  Zap,
+  Clock,
+  CheckCircle2,
+  ExternalLink,
+  Sparkles,
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 import { 
   collection, 
@@ -25,6 +31,7 @@ import { db, auth } from '../lib/firebase';
 import { motion } from 'motion/react';
 import { toast } from 'react-hot-toast';
 import { runAutonomousCycle } from '../services/contentQueueService';
+import { generateVisionNarrative } from '../services/geminiService';
 import { 
   BarChart, 
   Bar, 
@@ -109,228 +116,186 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Bento Grid */}
-      <div className="grid grid-cols-12 grid-rows-2 gap-6 min-h-[700px]">
-        
-        {/* Main Performance Chart - Large Tile */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="col-span-12 lg:col-span-8 row-span-2 bg-white rounded-[3rem] border border-solar-border p-10 flex flex-col shadow-[0_4px_30px_rgba(0,0,0,0.02)] relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 p-10 opacity-10">
-            <TrendingUp className="w-40 h-40" />
-          </div>
-          
-          <div className="flex items-center justify-between mb-12 relative z-10">
+      {/* Performance Tickers */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: 'Market Sentiment', val: 'Bullish', icon: TrendingUp, color: 'text-green-600' },
+          { label: 'Network Reach', val: '24.8k', icon: Users, color: 'text-solar-forest' },
+          { label: 'Signals Captured', val: '142', icon: Zap, color: 'text-solar-amber' },
+          { label: 'ROAS Index', val: '5.2x', icon: ArrowUpRight, color: 'text-solar-forest' },
+        ].map((stat, i) => (
+          <motion.div 
+            key={stat.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-white p-6 rounded-3xl border border-solar-border shadow-sm flex items-center gap-4 hover:shadow-md transition-all"
+          >
+            <div className={cn("w-12 h-12 rounded-2xl bg-solar-paper flex items-center justify-center", stat.color)}>
+               <stat.icon size={20} />
+            </div>
             <div>
-              <h2 className="font-serif text-3xl text-solar-forest tracking-tight">Campaign Velocity</h2>
-              <p className="text-solar-sage text-xs font-bold uppercase tracking-widest mt-1">Rolling 7-day conversion lift</p>
+               <p className="text-[10px] font-black uppercase tracking-widest text-solar-sage">{stat.label}</p>
+               <p className="text-xl font-serif font-black text-solar-forest">{stat.val}</p>
             </div>
-            <div className="flex gap-6">
-               <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-solar-sage">
-                  <span className="w-2.5 h-2.5 bg-solar-forest rounded-full shadow-sm" /> Organic
-               </span>
-               <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-solar-sage">
-                  <span className="w-2.5 h-2.5 bg-solar-amber rounded-full shadow-sm" /> Paid Performance
-               </span>
-            </div>
-          </div>
-
-          <div className="flex-1 min-h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorOrganic" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2A2C24" stopOpacity={0.05}/>
-                    <stop offset="95%" stopColor="#2A2C24" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorPaid" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#E6AA3E" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#E6AA3E" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E1D8" opacity={0.5} />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#8B8D7F', fontSize: 9, fontWeight: 900}} 
-                  dy={15} 
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#8B8D7F', fontSize: 9, fontWeight: 900}} 
-                />
-                <Tooltip 
-                   cursor={{ stroke: '#E6AA3E', strokeWidth: 1 }}
-                   contentStyle={{ 
-                     borderRadius: '24px', 
-                     border: '1px solid #E2E1D8', 
-                     boxShadow: '0 20px 40px rgba(0,0,0,0.08)', 
-                     backgroundColor: '#fff',
-                     padding: '20px'
-                   }}
-                />
-                <Area type="monotone" dataKey="organic" stroke="#2A2C24" strokeWidth={4} fillOpacity={1} fill="url(#colorOrganic)" />
-                <Area type="monotone" dataKey="paid" stroke="#E6AA3E" strokeWidth={4} fillOpacity={1} fill="url(#colorPaid)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-solar-border/50">
-             {[
-               { label: 'Avg ROAS', val: '4.2x', trend: '+0.4' },
-               { label: 'CPA', val: '$12.4', trend: '-2.1' },
-               { label: 'Conv. Rate', val: '5.8%', trend: '+1.2' }
-             ].map(i => (
-               <div key={i.label}>
-                 <p className="text-[10px] font-black uppercase tracking-widest text-solar-sage">{i.label}</p>
-                 <div className="flex items-baseline gap-2">
-                   <span className="text-2xl font-serif font-bold text-solar-forest">{i.val}</span>
-                   <span className="text-[10px] font-bold text-solar-amber">{i.trend}</span>
-                 </div>
-               </div>
-             ))}
-          </div>
-        </motion.div>
-
-        {/* Small Stat Cards Integrated into Bento */}
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          whileHover={{ y: -5 }}
-          className="col-span-12 md:col-span-6 lg:col-span-4 p-8 bg-solar-amber text-white rounded-[2.5rem] shadow-xl shadow-solar-amber/30 flex flex-col justify-between overflow-hidden relative group"
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-125 transition-transform">
-             <Zap className="w-32 h-32 rotate-12" />
-          </div>
-          <div className="relative z-10">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">System Efficiency</p>
-            <h3 className="text-5xl font-serif font-bold mt-2 tracking-tighter">94.2%</h3>
-          </div>
-          <div className="relative z-10 flex items-center gap-2 text-xs font-bold mt-8">
-            <div className="px-3 py-1 bg-white/20 rounded-full backdrop-blur-md flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" /> 12% Lift
-            </div>
-            <span>vs Last Period</span>
-          </div>
-        </motion.div>
-
-        {/* Channels Card */}
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          whileHover={{ y: -5 }}
-          className="col-span-12 md:col-span-6 lg:col-span-4 p-8 bg-white border border-solar-border rounded-[2.5rem] shadow-sm flex flex-col"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-serif text-xl font-bold text-solar-forest">Channel Distribution</h3>
-            <div className="p-2 bg-solar-paper rounded-xl">
-               <Globe className="w-5 h-5 text-solar-sage" />
-            </div>
-          </div>
-          <div className="space-y-5">
-            {[
-              { name: 'Instagram', val: 45, color: '#E6AA3E' },
-              { name: 'LinkedIn', val: 30, color: '#2A2C24' },
-              { name: 'GMB / Local', val: 25, color: '#8B8D7F' }
-            ].map(ch => (
-              <div key={ch.name} className="space-y-1.5">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-solar-sage">
-                  <span>{ch.name}</span>
-                  <span className="text-solar-forest">{ch.val}%</span>
-                </div>
-                <div className="h-1.5 w-full bg-solar-paper rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${ch.val}%` }}
-                    className="h-full rounded-full" 
-                    style={{ backgroundColor: ch.color }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
+          </motion.div>
+        ))}
       </div>
 
-      {/* Second Row of Bento */}
-      <div className="grid grid-cols-12 gap-6">
-         {/* Recent Activity - Wide Tile */}
-         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="col-span-12 lg:col-span-8 bg-white border border-solar-border rounded-[3rem] p-10 overflow-hidden"
-         >
-           <div className="flex items-center justify-between mb-8">
-             <h3 className="font-serif text-3xl text-solar-forest tracking-tight">Recent Content Deployments</h3>
-             <button className="text-xs font-black uppercase tracking-widest text-solar-sage hover:text-solar-amber transition-colors">View All</button>
-           </div>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {recentPosts.length === 0 ? (
-                <div className="col-span-2 text-center py-20 bg-solar-paper/30 rounded-[2rem] border border-dashed border-solar-border">
-                   <p className="font-serif italic text-solar-sage text-lg">No active broadcasts detected.</p>
-                </div>
-              ) : (
-                recentPosts.map((post, idx) => (
-                  <motion.div 
-                    key={post.id} 
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="flex gap-5 p-5 bg-solar-paper/40 rounded-3xl border border-solar-border/30 group hover:bg-white hover:shadow-xl hover:shadow-solar-forest/5 transition-all"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-white border border-solar-border flex items-center justify-center flex-shrink-0 group-hover:bg-solar-amber group-hover:border-solar-amber transition-colors">
-                        {post.platform === 'instagram' && <Instagram className="w-6 h-6 text-solar-sage group-hover:text-white" />}
-                        {post.platform === 'linkedin' && <Linkedin className="w-6 h-6 text-solar-sage group-hover:text-white" />}
-                        {post.platform === 'gmb' && <Globe className="w-6 h-6 text-solar-sage group-hover:text-white" />}
-                        {post.platform === 'facebook' && <Facebook className="w-6 h-6 text-solar-sage group-hover:text-white" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-solar-forest truncate mb-1">{post.content}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-solar-sage">{post.platform}</span>
-                        <span className="w-1 h-1 bg-solar-border rounded-full" />
-                        <div className="px-2 py-0.5 bg-solar-forest text-white text-[8px] font-black uppercase tracking-widest rounded-full">
-                          {post.status}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-           </div>
-         </motion.div>
+      {/* Nexus Intelligence Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white rounded-[2.5rem] border border-solar-border p-10 shadow-sm overflow-hidden relative group">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-solar-amber/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl transition-all group-hover:bg-solar-amber/10" />
+               <div className="flex items-center justify-between mb-10">
+                  <h3 className="text-3xl font-serif font-bold text-solar-forest">Signal Reception</h3>
+                  <div className="flex gap-2">
+                     <span className="px-3 py-1 bg-solar-paper rounded-lg text-[8px] font-black uppercase tracking-widest text-solar-sage flex items-center gap-1">
+                        <div className="w-1 h-1 bg-green-500 rounded-full animate-ping" /> Live Market Mix
+                     </span>
+                  </div>
+               </div>
 
-         {/* Mini Map or Location Stat */}
-         <motion.div 
-           initial={{ opacity: 0, y: 20 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ delay: 0.1 }}
-           className="col-span-12 lg:col-span-4 bg-solar-forest text-white rounded-[3rem] p-10 flex flex-col justify-between shadow-2xl relative overflow-hidden"
-         >
-           <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-           <div className="relative z-10">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-solar-sage">Target Market</p>
-              <h3 className="text-3xl font-serif font-bold mt-2 tracking-tight">Nairobi, Kenya</h3>
-              <div className="h-40 w-full bg-white/5 rounded-[2rem] mt-6 border border-white/10 flex items-center justify-center">
-                 <Globe className="w-20 h-20 text-white/10 animate-pulse" />
+               <div className="space-y-6">
+                  <div className="p-6 bg-solar-paper/50 rounded-2xl border border-solar-border flex items-start gap-4">
+                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm flex-shrink-0 text-solar-amber">
+                        <Sparkles className="w-5 h-5" />
+                     </div>
+                     <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-solar-forest mb-1">Growth Signal: Commercial ROI</h4>
+                        <p className="text-xs text-solar-sage leading-relaxed italic">Market analysis indicates a 14% surge in local search for "Solar Lease Kenya". AI recommending shift towards zero-initial-cost financing narratives in LinkedIn transmissions.</p>
+                     </div>
+                  </div>
+                  <div className="p-6 bg-solar-paper/50 rounded-2xl border border-solar-border flex items-start gap-4">
+                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm flex-shrink-0 text-solar-forest">
+                        <TrendingUp className="w-5 h-5" />
+                     </div>
+                     <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-solar-forest mb-1">Atmospheric Intelligence</h4>
+                        <p className="text-xs text-solar-sage leading-relaxed italic">Nairobi Heatwave Index rising. Engine Room host automatically prepared 3 cooling solution campaigns for the next 48hr window.</p>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="mt-10 pt-8 border-t border-solar-border flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-solar-sage">
+                  <span>Synced 2 mins ago</span>
+                  <button className="text-solar-amber hover:underline">Re-calibrate Signals</button>
+               </div>
+            </div>
+
+            <div className="bg-solar-forest rounded-[3rem] p-10 text-white flex flex-col md:flex-row items-center gap-10 overflow-hidden relative shadow-2xl">
+               <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+               <div className="flex-1 space-y-4 relative z-10">
+                  <h3 className="text-4xl font-serif font-bold tracking-tight">Executive Summary Portfolio</h3>
+                  <p className="text-white/60 text-xs font-medium uppercase tracking-[0.2em]">Generate board-ready performance reports with a single pulse.</p>
+                  <button 
+                    onClick={async () => {
+                      const id = toast.loading("Nexus is synthesizing global performance signals...");
+                      try {
+                        const report = await generateVisionNarrative("Current quarter focus on commercial solar ROI and community residential expansion.");
+                        toast.success("Executive Portfolio Compiled and Staged.", { id });
+                        // In a real app, this could open a PDF or a detailed modal
+                        console.log("Board Report:", report);
+                      } catch (e) {
+                        toast.error("Synthesis failed.", { id });
+                      }
+                    }}
+                    className="bg-solar-amber text-white px-10 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-2xl hover:shadow-solar-amber/40 transition-all flex items-center gap-3"
+                  >
+                     <FileText className="w-4 h-4" />
+                     Compile Board Report
+                  </button>
+               </div>
+               <div className="w-48 h-48 bg-white/5 rounded-[3rem] border border-white/10 flex items-center justify-center backdrop-blur-md relative z-10 text-solar-amber">
+                  <TrendingUp className="w-16 h-16 opacity-50" />
+               </div>
+            </div>
+         </div>
+
+         <div className="space-y-8">
+            <div className="bg-white rounded-[2.5rem] border border-solar-border p-8 shadow-sm">
+               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-solar-sage mb-6">Asset Health Dashboard</h4>
+               <div className="space-y-6">
+                  {['Inverters - Nairobi Hub', 'Battery Modules - Doha', 'Solar Pumps - Kisumu'].map((item, i) => (
+                    <div key={item} className="space-y-2">
+                       <div className="flex justify-between text-[10px] font-bold">
+                          <span className="text-solar-forest">{item}</span>
+                          <span className={i === 1 ? "text-rose-500" : "text-solar-amber"}>{i === 1 ? '7%' : (92 - i*15) + '%'}</span>
+                       </div>
+                       <div className="w-full h-1.5 bg-solar-paper rounded-full overflow-hidden">
+                          <div 
+                             className={cn("h-full transition-all duration-1000", i === 1 ? "bg-rose-500" : "bg-solar-amber")} 
+                             style={{ width: i === 1 ? '7%' : (92 - i*15) + '%' }} 
+                          />
+                       </div>
+                    </div>
+                  ))}
+               </div>
+               <div className="mt-8 p-4 bg-solar-amber/10 border border-solar-amber/20 rounded-xl">
+                  <p className="text-[9px] text-solar-forest font-bold leading-relaxed flex items-start gap-2">
+                     <AlertCircle className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                     Critical: Doha logistics below threshold. AI has paused 2 high-spend campaigns.
+                  </p>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-[2.5rem] border border-solar-border p-8 shadow-sm flex flex-col items-center text-center space-y-6">
+               <div className="w-16 h-16 bg-solar-paper rounded-2xl flex items-center justify-center text-solar-forest">
+                  <Globe className="w-8 h-8" />
+               </div>
+               <div>
+                  <h4 className="font-serif font-bold text-lg text-solar-forest">System Integrity</h4>
+                  <p className="text-[10px] text-solar-sage font-medium uppercase mt-1">Autonomous Uptime: 99.9%</p>
+               </div>
+               <div className="w-full h-[1px] bg-solar-border" />
+               <div className="grid grid-cols-2 w-full gap-4">
+                  <div className="p-4 bg-solar-paper rounded-2xl">
+                     <p className="text-[8px] font-black text-solar-sage uppercase mb-1">Signals</p>
+                     <p className="text-lg font-serif font-black text-solar-forest">1.2k</p>
+                  </div>
+                  <div className="p-4 bg-solar-paper rounded-2xl">
+                     <p className="text-[8px] font-black text-solar-sage uppercase mb-1">Growth</p>
+                     <p className="text-lg font-serif font-black text-solar-amber">+18%</p>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      {/* Global Transmissions */}
+      <div className="bg-white rounded-[2.5rem] border border-solar-border shadow-sm overflow-hidden">
+        <div className="p-10 border-b border-solar-border flex items-center justify-between">
+          <h3 className="text-3xl font-serif font-bold text-solar-forest tracking-tight">Global Transmissions</h3>
+          <button className="text-[10px] font-black uppercase tracking-widest text-solar-sage hover:text-solar-forest transition-colors">Archive View</button>
+        </div>
+        <div className="divide-y divide-solar-border">
+          {recentPosts.map((post) => (
+            <div key={post.id} className="p-8 flex items-center justify-between hover:bg-solar-paper/30 transition-colors group">
+              <div className="flex items-center gap-6">
+                <div className="w-14 h-14 bg-solar-paper rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-105 text-solar-sage">
+                  {post.platform === 'instagram' && <Instagram size={24} />}
+                  {post.platform === 'linkedin' && <Linkedin size={24} />}
+                  {post.platform === 'gmb' && <Globe size={24} />}
+                </div>
+                <div>
+                  <p className="font-serif italic text-lg text-solar-forest leading-tight mb-1">{post.content}</p>
+                  <div className="flex items-center gap-4 text-[10px] font-bold text-solar-sage uppercase tracking-widest">
+                    <span className="flex items-center gap-1.5"><Clock size={12} className="text-solar-amber" />{post.scheduledAt || post.date}</span>
+                    <span className="flex items-center gap-1.5"><CheckCircle2 size={12} className="text-solar-forest" />{post.status}</span>
+                  </div>
+                </div>
               </div>
-           </div>
-           <div className="relative z-10 mt-8 flex justify-between items-end">
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-solar-sage">Avg CTR</p>
-                <p className="text-xl font-bold">12.4%</p>
-              </div>
-              <div className="h-12 w-12 bg-solar-amber rounded-2xl flex items-center justify-center shadow-lg shadow-solar-amber/20">
-                <ArrowUpRight className="w-6 h-6 font-bold" />
-              </div>
-           </div>
-         </motion.div>
+              <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-solar-paper text-solar-sage opacity-0 group-hover:opacity-100 transition-all hover:bg-solar-border">
+                <ExternalLink size={16} />
+              </button>
+            </div>
+          ))}
+          {recentPosts.length === 0 && (
+            <div className="p-20 text-center text-solar-sage italic font-serif opacity-40">
+              Reception clear. No recent transmissions detected.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
