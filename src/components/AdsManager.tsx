@@ -59,11 +59,11 @@ export default function AdsManager() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    if (!auth.currentUser) return;
+    const userId = auth.currentUser?.uid || 'nexus-commander-001';
 
     const q = query(
       collection(db, 'campaigns'),
-      where('authorId', '==', auth.currentUser.uid)
+      where('authorId', '==', userId)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -85,7 +85,7 @@ export default function AdsManager() {
           ...concept,
           platform: 'google_ads',
           performance: { spend: 0, clicks: 0, conversions: 0 },
-          authorId: auth.currentUser?.uid,
+          authorId: auth.currentUser?.uid || 'nexus-commander-001',
           createdAt: serverTimestamp(),
         })
       );
@@ -459,8 +459,4 @@ export default function AdsManager() {
       </div>
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
 }

@@ -36,8 +36,8 @@ export default function ProjectCenter() {
   const [isGeneratingTasks, setIsGeneratingTasks] = useState(false);
 
   useEffect(() => {
-    if (!auth.currentUser) return;
-    const q = query(collection(db, 'projects'), where('authorId', '==', auth.currentUser.uid), orderBy('createdAt', 'desc'));
+    const userId = auth.currentUser?.uid || 'nexus-commander-001';
+    const q = query(collection(db, 'projects'), where('authorId', '==', userId), orderBy('createdAt', 'desc'));
     return onSnapshot(q, (snapshot) => {
       setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
@@ -65,7 +65,7 @@ export default function ProjectCenter() {
         title,
         description,
         status: 'active',
-        authorId: auth.currentUser?.uid,
+        authorId: auth.currentUser?.uid || 'nexus-commander-001',
         createdAt: serverTimestamp(),
       });
       setIsNewProjectModalOpen(false);
@@ -101,7 +101,7 @@ export default function ProjectCenter() {
              ...task,
              projectId,
              status: 'backlog',
-             authorId: auth.currentUser?.uid,
+             authorId: auth.currentUser?.uid || 'nexus-commander-001',
              createdAt: serverTimestamp(),
            })
          );

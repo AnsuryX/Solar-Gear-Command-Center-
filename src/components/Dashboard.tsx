@@ -28,10 +28,11 @@ import {
   onSnapshot 
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'react-hot-toast';
 import { runAutonomousCycle } from '../services/contentQueueService';
 import { generateVisionNarrative } from '../services/geminiService';
+import { cn } from '../lib/utils';
 import { 
   BarChart, 
   Bar, 
@@ -58,11 +59,11 @@ export default function Dashboard() {
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!auth.currentUser) return;
+    const userId = auth.currentUser?.uid || 'nexus-commander-001';
 
     const q = query(
       collection(db, 'posts'),
-      where('authorId', '==', auth.currentUser.uid),
+      where('authorId', '==', userId),
       orderBy('publishedAt', 'desc'),
       limit(5)
     );
@@ -261,25 +262,28 @@ export default function Dashboard() {
                   </div>
                </div>
 
-               <div className="space-y-6">
-                  <div className="p-6 bg-solar-paper/50 rounded-2xl border border-solar-border flex items-start gap-4">
-                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm flex-shrink-0 text-solar-amber">
-                        <Sparkles className="w-5 h-5" />
-                     </div>
-                     <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-solar-forest mb-1">Growth Signal: Commercial ROI</h4>
-                        <p className="text-xs text-solar-sage leading-relaxed italic">Market analysis indicates a 14% surge in local search for "Solar Lease Kenya". AI recommending shift towards zero-initial-cost financing narratives in LinkedIn transmissions.</p>
-                     </div>
-                  </div>
-                  <div className="p-6 bg-solar-paper/50 rounded-2xl border border-solar-border flex items-start gap-4">
-                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm flex-shrink-0 text-solar-forest">
-                        <TrendingUp className="w-5 h-5" />
-                     </div>
-                     <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-solar-forest mb-1">Atmospheric Intelligence</h4>
-                        <p className="text-xs text-solar-sage leading-relaxed italic">Nairobi Heatwave Index rising. Engine Room host automatically prepared 3 cooling solution campaigns for the next 48hr window.</p>
-                     </div>
-                  </div>
+               <div className="space-y-4">
+                  {[
+                    { title: 'Growth Signal: Commercial ROI', content: 'Market analysis indicates a 14% surge in local search for "Solar Lease Kenya". AI recommending shift towards zero-initial-cost financing narratives.', icon: Sparkles, color: 'text-solar-amber' },
+                    { title: 'Atmospheric Intelligence', content: 'Nairobi Heatwave Index rising. Engine Room host automatically prepared 3 cooling solution campaigns for the next 48hr window.', icon: TrendingUp, color: 'text-solar-forest' },
+                    { title: 'Logistics Alert: Doha Delay', content: 'Subspace logistics detection identified a 4.2h delay in regional forwarding. Ad budgets rerouted to localized stock locations.', icon: AlertCircle, color: 'text-rose-500' }
+                  ].map((signal, idx) => (
+                    <motion.div 
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="p-6 bg-solar-paper/50 rounded-2xl border border-solar-border flex items-start gap-4 hover:bg-white hover:shadow-md transition-all group/signal cursor-pointer"
+                    >
+                       <div className={cn("w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm flex-shrink-0", signal.color)}>
+                          <signal.icon className="w-5 h-5 group-hover/signal:scale-110 transition-transform" />
+                       </div>
+                       <div>
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-solar-forest mb-1">{signal.title}</h4>
+                          <p className="text-xs text-solar-sage leading-relaxed italic">{signal.content}</p>
+                       </div>
+                    </motion.div>
+                  ))}
                </div>
 
                <div className="mt-10 pt-8 border-t border-solar-border flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-solar-sage">
@@ -319,29 +323,50 @@ export default function Dashboard() {
 
          <div className="space-y-8">
             <div className="bg-white rounded-[2.5rem] border border-solar-border p-8 shadow-sm">
-               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-solar-sage mb-6">Asset Health Dashboard</h4>
+               <div className="flex items-center justify-between mb-6">
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-solar-sage">Asset Health Dashboard</h4>
+                 <div className="flex gap-1">
+                    {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-solar-amber rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />)}
+                 </div>
+               </div>
                <div className="space-y-6">
-                  {['Inverters - Nairobi Hub', 'Battery Modules - Doha', 'Solar Pumps - Kisumu'].map((item, i) => (
-                    <div key={item} className="space-y-2">
+                  {[
+                    { name: 'Inverters - Nairobi', yield: 92, color: 'bg-solar-amber' },
+                    { name: 'Battery Modules - Doha', yield: 7, color: 'bg-rose-500' },
+                    { name: 'Solar Pumps - Kisumu', yield: 78, color: 'bg-solar-forest' }
+                  ].map((item, i) => (
+                    <motion.div 
+                      key={item.name} 
+                      className="space-y-2 group/asset cursor-help"
+                      whileHover={{ x: 5 }}
+                    >
                        <div className="flex justify-between text-[10px] font-bold">
-                          <span className="text-solar-forest">{item}</span>
-                          <span className={i === 1 ? "text-rose-500" : "text-solar-amber"}>{i === 1 ? '7%' : (92 - i*15) + '%'}</span>
+                          <span className="text-solar-forest group-hover/asset:text-solar-amber transition-colors">{item.name}</span>
+                          <span className={cn(item.yield < 20 ? "text-rose-500" : "text-solar-amber")}>{item.yield}%</span>
                        </div>
                        <div className="w-full h-1.5 bg-solar-paper rounded-full overflow-hidden">
-                          <div 
-                             className={cn("h-full transition-all duration-1000", i === 1 ? "bg-rose-500" : "bg-solar-amber")} 
-                             style={{ width: i === 1 ? '7%' : (92 - i*15) + '%' }} 
+                          <motion.div 
+                             initial={{ width: 0 }}
+                             animate={{ width: `${item.yield}%` }}
+                             transition={{ duration: 1, delay: i * 0.2 }}
+                             className={cn("h-full transition-all", item.color)} 
                           />
                        </div>
-                    </div>
+                    </motion.div>
                   ))}
                </div>
-               <div className="mt-8 p-4 bg-solar-amber/10 border border-solar-amber/20 rounded-xl">
-                  <p className="text-[9px] text-solar-forest font-bold leading-relaxed flex items-start gap-2">
-                     <AlertCircle className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                     Critical: Doha logistics below threshold. AI has paused 2 high-spend campaigns.
-                  </p>
-               </div>
+               <AnimatePresence>
+                 <motion.div 
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   className="mt-8 p-4 bg-solar-amber/10 border border-solar-amber/20 rounded-xl"
+                 >
+                    <p className="text-[9px] text-solar-forest font-bold leading-relaxed flex items-start gap-2">
+                       <AlertCircle className="w-3 h-3 flex-shrink-0 mt-0.5 text-rose-500 animate-bounce" />
+                       Nexus System Alert: Doha logistics below threshold. AI has paused 2 high-spend target campaigns.
+                    </p>
+                 </motion.div>
+               </AnimatePresence>
             </div>
 
             <div className="bg-white rounded-[2.5rem] border border-solar-border p-8 shadow-sm flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden">
@@ -440,8 +465,4 @@ export default function Dashboard() {
       </div>
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
 }

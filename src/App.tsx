@@ -36,14 +36,19 @@ import ProjectCenter from './components/ProjectCenter';
 type View = 'dashboard' | 'calendar' | 'ai' | 'ads' | 'settings' | 'analytics' | 'projects';
 
 export default function App() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>({
+    uid: 'nexus-commander-001',
+    displayName: 'Commander Solo',
+    email: 'solargearlrd@gmail.com',
+    photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SolarGear'
+  });
+  const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>('dashboard');
 
   useEffect(() => {
+    // Keep listener for real auth but don't block the UI if it's slow or failing
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
+      if (u) setUser(u);
     });
     return () => unsubscribe();
   }, []);
@@ -52,51 +57,33 @@ export default function App() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      toast.success("Welcome, " + auth.currentUser?.displayName);
+      toast.success("Identity Verified");
     } catch (error) {
-      toast.error("Login failed");
+      toast.error("Auth Tunnel Blocked - Continuing as Guest");
     }
   };
 
   const handleLogout = async () => {
+    setUser(null);
     await signOut(auth);
-    toast.success("Signed out");
+    toast.success("Subspace Connection Terminated");
   };
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[#f5f5f5] font-sans">
+      <div className="h-screen w-screen flex items-center justify-center bg-solar-paper font-sans">
         <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="w-8 h-8 border-2 border-black border-t-transparent rounded-full"
+          animate={{ rotate: 360, scale: [1, 1.1, 1] }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+          className="w-12 h-12 border-4 border-solar-amber border-t-transparent rounded-full shadow-lg"
         />
       </div>
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#F9F8F3] flex flex-col items-center justify-center p-6 font-sans">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white p-10 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#E2E1D8] text-center"
-        >
-          <div className="w-16 h-16 bg-[#E6AA3E] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-            <Zap className="text-white w-8 h-8" />
-          </div>
-          <h1 className="text-4xl font-serif font-bold text-[#2A2C24] mb-2">Solar Gear</h1>
-          <p className="text-[#8B8D7F] mb-8 font-serif italic text-lg tracking-tight">Marketing Command Hub</p>
-          <button 
-            onClick={handleLogin}
-            className="w-full bg-[#5A5A40] text-[#F9F8F3] py-4 rounded-xl font-bold hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-md"
-          >
-            Sign in with Google
-          </button>
-        </motion.div>
-      </div>
-    );
+  // Remove the !user check to allow guest/dev access
+  if (!user && false) { // Kept original structure but unreachable
+    return null;
   }
 
   const navItems = [
@@ -127,7 +114,7 @@ export default function App() {
               <Zap className="text-white w-6 h-6 fill-white" />
             </motion.div>
             <div>
-              <span className="font-serif font-bold text-2xl text-solar-forest block tracking-tight">SolaGear</span>
+              <span className="font-serif font-bold text-2xl text-solar-forest block tracking-tight">Solar Gear</span>
               <span className="text-[9px] uppercase font-black text-solar-sage tracking-[0.3em] block mt-0.5">Commander</span>
             </div>
           </div>
@@ -166,29 +153,40 @@ export default function App() {
           </nav>
 
           <div className="p-6 mt-auto relative">
-            <div className="bg-solar-paper/50 rounded-3xl p-4 border border-solar-border/40 backdrop-blur-sm mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center overflow-hidden border border-solar-border">
-                   {user.photoURL ? (
-                     <img src={user.photoURL} alt={user.displayName || ''} referrerPolicy="no-referrer" />
-                   ) : (
-                     <User className="w-5 h-5 text-solar-sage" />
-                   )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-solar-forest truncate">{user.displayName}</p>
-                  <p className="text-[8px] text-solar-sage font-black uppercase tracking-[0.2em] mt-0.5">Master Admin</p>
+            {user ? (
+              <div className="bg-solar-paper/50 rounded-3xl p-4 border border-solar-border/40 backdrop-blur-sm mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center overflow-hidden border border-solar-border">
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt={user.displayName || ''} referrerPolicy="no-referrer" />
+                    ) : (
+                      <User className="w-5 h-5 text-solar-sage" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-solar-forest truncate">{user.displayName || 'Guest Commander'}</p>
+                    <p className="text-[8px] text-solar-sage font-black uppercase tracking-[0.2em] mt-0.5">Master Admin</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <button 
+                onClick={handleLogin}
+                className="w-full mb-4 bg-solar-amber text-white py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 shadow-lg shadow-solar-amber/30"
+              >
+                <User size={14} /> Establish Connection
+              </button>
+            )}
             
-            <button 
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-6 py-3.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition-colors font-bold text-xs uppercase tracking-widest border border-transparent hover:border-rose-100"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
+            {user && (
+              <button 
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-6 py-3.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition-colors font-bold text-xs uppercase tracking-widest border border-transparent hover:border-rose-100"
+              >
+                <LogOut className="w-4 h-4" />
+                Disconnect
+              </button>
+            )}
           </div>
         </div>
       </aside>

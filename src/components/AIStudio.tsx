@@ -64,7 +64,7 @@ export default function AIStudio() {
       await executeN8nWorkflow('nexus-automation-ingest', { 
         blueprint: result.content,
         timestamp: new Date().toISOString(),
-        author: auth.currentUser?.email
+        author: auth.currentUser?.email || 'guest@Nexus-commander.local'
       });
       toast.success("Nexus Bridge synced with live n8n node!", { id: toastId });
     } catch (error) {
@@ -138,13 +138,12 @@ export default function AIStudio() {
   };
 
   const saveGeneration = async (type: string, prompt: string, resultVal: string) => {
-    if (!auth.currentUser) return;
     try {
       await addDoc(collection(db, 'ai_generations'), {
         type,
         prompt,
         result: resultVal,
-        authorId: auth.currentUser.uid,
+        authorId: auth.currentUser?.uid || 'nexus-commander-001',
         createdAt: serverTimestamp(),
       });
     } catch (error) {
