@@ -60,6 +60,30 @@ app.get('/api/external/kpis', authenticateExternal, (req, res) => {
   });
 });
 
+// --- n8n MCP Bridge ---
+app.post('/api/n8n/proxy', async (req, res) => {
+  const { url, token, method, data } = req.body;
+  try {
+    const response = await axios({
+      method: method || 'POST',
+      url: url,
+      data: data,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    res.json(response.data);
+  } catch (error: any) {
+    console.error('n8n Proxy Error:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      status: 'error',
+      message: 'Failed to communicate with n8n MCP Server',
+      details: error.response?.data || error.message
+    });
+  }
+});
+
 // --- Google Auth (GMB & GA4) ---
 app.get('/api/auth/google/url', (req, res) => {
   const { scope } = req.query;

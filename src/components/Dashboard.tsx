@@ -255,9 +255,9 @@ export default function Dashboard() {
                <div className="flex items-center justify-between mb-10">
                   <h3 className="text-3xl font-serif font-bold text-solar-forest">Signal Reception</h3>
                   <div className="flex gap-2">
-                     <span className="px-3 py-1 bg-solar-paper rounded-lg text-[8px] font-black uppercase tracking-widest text-solar-sage flex items-center gap-1">
+                     <div className="px-3 py-1 bg-solar-paper rounded-lg text-[8px] font-black uppercase tracking-widest text-solar-sage flex items-center gap-1">
                         <div className="w-1 h-1 bg-green-500 rounded-full animate-ping" /> Live Market Mix
-                     </span>
+                     </div>
                   </div>
                </div>
 

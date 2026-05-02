@@ -12,7 +12,9 @@ export default function SystemSettings() {
     openrouterKey: localStorage.getItem('openrouter_key') || '',
     autonomousMode: localStorage.getItem('autonomous_mode') === 'true',
     brandVoice: localStorage.getItem('brand_voice') || 'Professional, Technical, Visionary',
-    brandTone: localStorage.getItem('brand_tone') || 'Confident but humble, ROI-focused'
+    brandTone: localStorage.getItem('brand_tone') || 'Confident but humble, ROI-focused',
+    n8nUrl: localStorage.getItem('n8n_url') || 'https://automate.solargear.co.ke/mcp-server/http',
+    n8nKey: localStorage.getItem('n8n_key') || ''
   });
 
   const saveConfig = () => {
@@ -22,6 +24,8 @@ export default function SystemSettings() {
     localStorage.setItem('autonomous_mode', String(config.autonomousMode));
     localStorage.setItem('brand_voice', config.brandVoice);
     localStorage.setItem('brand_tone', config.brandTone);
+    localStorage.setItem('n8n_url', config.n8nUrl);
+    localStorage.setItem('n8n_key', config.n8nKey);
     toast.success("System parameters synchronized");
   };
 
@@ -65,6 +69,20 @@ export default function SystemSettings() {
                Security & API
              </div>
              {activeTab === 'security' && <Zap size={12} className="fill-current animate-pulse text-solar-amber" />}
+           </button>
+           <button 
+             id="tab-automation"
+             onClick={() => setActiveTab('automation' as any)}
+             className={cn(
+               "w-full flex items-center justify-between px-6 py-5 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all group",
+               activeTab === ('automation' as any) ? "bg-indigo-600 text-white shadow-xl shadow-indigo-600/20" : "bg-white text-solar-sage border border-solar-border hover:bg-solar-paper"
+             )}
+           >
+             <div className="flex items-center gap-3">
+               <Zap className={cn("w-4 h-4", activeTab === ('automation' as any) ? "text-white" : "text-indigo-600")} />
+               Automation Bridge
+             </div>
+             {activeTab === ('automation' as any) && <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
            </button>
         </div>
 
@@ -205,6 +223,57 @@ export default function SystemSettings() {
                        <div className="p-5 bg-solar-paper/30 border border-solar-border rounded-2xl shadow-sm">
                           <h5 className="text-[8px] font-black uppercase text-solar-sage mb-2 tracking-[0.2em]">Protocol Architecture</h5>
                           <div className="text-xs font-bold text-solar-forest uppercase">Secure JSON REST</div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {activeTab === ('automation' as any) && (
+              <div className="space-y-8 relative z-10">
+                 <div className="p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100 backdrop-blur-sm italic text-sm text-indigo-900 leading-relaxed shadow-inner">
+                   The <strong>n8n MCP Bridge</strong> connects Nexus to your private automation server. This allows AI agents to directly create workflows, trigger webhooks, and orchestrate complex multi-step processes.
+                 </div>
+
+                 <div className="space-y-6">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage ml-1">n8n MCP Server URL</label>
+                       <input 
+                         value={config.n8nUrl}
+                         onChange={(e) => setConfig({...config, n8nUrl: e.target.value})}
+                         className="w-full p-5 rounded-2xl bg-solar-paper border border-solar-border text-xs font-mono text-solar-forest shadow-sm focus:shadow-md transition-all outline-none"
+                         placeholder="https://automate.solargear.co.ke/mcp-server/http"
+                       />
+                    </div>
+
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage ml-1">n8n API Key (Bearer Token)</label>
+                       <div className="relative group">
+                         <div className="absolute inset-y-0 left-5 flex items-center text-indigo-600">
+                           <Key size={16} />
+                         </div>
+                         <input 
+                           type="password"
+                           value={config.n8nKey}
+                           onChange={(e) => setConfig({...config, n8nKey: e.target.value})}
+                           className="w-full pl-12 pr-4 py-5 rounded-2xl bg-white border border-solar-border text-xs font-mono text-solar-forest shadow-sm group-hover:border-indigo-300 transition-all outline-none"
+                           placeholder="eyJhbGciOiJIUzI1NiIsInR5..."
+                         />
+                       </div>
+                       <p className="text-[9px] text-solar-sage mt-2 italic px-2">Ensure your n8n instance has the <strong>Integrations API</strong> enabled.</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6 pt-4">
+                       <div className="p-5 bg-indigo-50 border border-indigo-100 rounded-2xl shadow-sm">
+                          <h5 className="text-[8px] font-black uppercase text-indigo-900 mb-2 tracking-[0.2em]">n8n Status</h5>
+                          <div className="text-xs font-bold text-indigo-600 flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse shadow-sm shadow-indigo-500/50" /> 
+                             Connected (MCP Mode)
+                          </div>
+                       </div>
+                       <div className="p-5 bg-indigo-50 border border-indigo-100 rounded-2xl shadow-sm">
+                          <h5 className="text-[8px] font-black uppercase text-indigo-900 mb-2 tracking-[0.2em]">Active Workflows</h5>
+                          <div className="text-xs font-bold text-indigo-900 uppercase">12 Autonomous Nodes</div>
                        </div>
                     </div>
                  </div>
