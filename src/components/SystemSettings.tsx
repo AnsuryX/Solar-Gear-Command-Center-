@@ -10,7 +10,9 @@ export default function SystemSettings() {
     provider: localStorage.getItem('ai_provider') || 'gemini',
     modelId: localStorage.getItem('ai_model_id') || 'gemini-1.5-flash',
     openrouterKey: localStorage.getItem('openrouter_key') || '',
-    autonomousMode: localStorage.getItem('autonomous_mode') === 'true'
+    autonomousMode: localStorage.getItem('autonomous_mode') === 'true',
+    brandVoice: localStorage.getItem('brand_voice') || 'Professional, Technical, Visionary',
+    brandTone: localStorage.getItem('brand_tone') || 'Confident but humble, ROI-focused'
   });
 
   const saveConfig = () => {
@@ -18,6 +20,8 @@ export default function SystemSettings() {
     localStorage.setItem('ai_model_id', config.modelId);
     localStorage.setItem('openrouter_key', config.openrouterKey);
     localStorage.setItem('autonomous_mode', String(config.autonomousMode));
+    localStorage.setItem('brand_voice', config.brandVoice);
+    localStorage.setItem('brand_tone', config.brandTone);
     toast.success("System parameters synchronized");
   };
 
@@ -29,26 +33,34 @@ export default function SystemSettings() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div className="space-y-2">
+        <div className="space-y-3">
            <button 
+             id="tab-intelligence"
              onClick={() => setActiveTab('ai')}
              className={cn(
-               "w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
-               activeTab === 'ai' ? "bg-solar-amber text-white shadow-lg" : "bg-white text-solar-sage hover:bg-solar-paper"
+               "w-full flex items-center justify-between px-6 py-5 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all group",
+               activeTab === 'ai' ? "bg-solar-amber text-white shadow-xl shadow-solar-amber/20" : "bg-white text-solar-sage border border-solar-border hover:bg-solar-paper"
              )}
            >
-             <Cpu className="w-4 h-4" />
-             Intelligence Core
+             <div className="flex items-center gap-3">
+               <Cpu className={cn("w-4 h-4", activeTab === 'ai' ? "text-white" : "text-solar-amber")} />
+               Intelligence Core
+             </div>
+             {activeTab === 'ai' && <Zap size={12} className="fill-current animate-pulse" />}
            </button>
            <button 
+             id="tab-security"
              onClick={() => setActiveTab('security')}
              className={cn(
-               "w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
-               activeTab === 'security' ? "bg-solar-amber text-white shadow-lg" : "bg-white text-solar-sage hover:bg-solar-paper"
+               "w-full flex items-center justify-between px-6 py-5 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all group",
+               activeTab === 'security' ? "bg-solar-forest text-white shadow-xl shadow-solar-forest/20" : "bg-white text-solar-sage border border-solar-border hover:bg-solar-paper"
              )}
            >
-             <ShieldCheck className="w-4 h-4" />
-             Security & API
+             <div className="flex items-center gap-3">
+               <ShieldCheck className={cn("w-4 h-4", activeTab === 'security' ? "text-white" : "text-solar-forest")} />
+               Security & API
+             </div>
+             {activeTab === 'security' && <Zap size={12} className="fill-current animate-pulse text-solar-amber" />}
            </button>
         </div>
 
@@ -115,16 +127,75 @@ export default function SystemSettings() {
                        </div>
                     </div>
                   )}
+
+                  <div className="grid grid-cols-2 gap-6 pt-6 border-t border-solar-border">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage">Brand Voice</label>
+                       <textarea 
+                         value={config.brandVoice}
+                         onChange={(e) => setConfig({...config, brandVoice: e.target.value})}
+                         rows={2}
+                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-medium resize-none"
+                         placeholder="e.g. Technical, Elite, Disruptive"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage">Brand Tone</label>
+                       <textarea 
+                         value={config.brandTone}
+                         onChange={(e) => setConfig({...config, brandTone: e.target.value})}
+                         rows={2}
+                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-medium resize-none"
+                         placeholder="e.g. ROI-focused, educational"
+                       />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
             {activeTab === 'security' && (
-              <div className="space-y-6">
-                 <div className="p-6 bg-solar-paper rounded-2xl border border-solar-border italic text-sm text-solar-sage">
-                   All OAuth tokens and API keys are stored locally in your browser's encrypted subspace. Direct API calls bypass expensive intermediate layers.
+              <div className="space-y-8">
+                 <div className="p-6 bg-solar-paper rounded-2xl border border-solar-border italic text-sm text-solar-sage leading-relaxed">
+                   Nexus uses a <strong>Zero-Server-Storage</strong> protocol for social tokens. However, for external automation (n8n, Zapier), you can use the <strong>Nexus Bridge</strong> API key to trigger cycles from external agents.
                  </div>
-                 {/* Placeholder for more security settings */}
+
+                 <div className="space-y-6">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage">Bridge Endpoint (Webhook Target)</label>
+                       <div className="w-full p-4 rounded-xl bg-solar-paper border border-solar-border text-xs font-mono text-solar-forest break-all">
+                          {window.location.origin}/api/external/trigger-strategy
+                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage">Nexus Bridge Key (X-Nexus-Key)</label>
+                       <div className="relative group">
+                         <div className="absolute inset-y-0 left-4 flex items-center text-solar-sage">
+                           <Key size={14} />
+                         </div>
+                         <input 
+                           readOnly
+                           value="nexus_dev_secret_2026"
+                           className="w-full pl-10 pr-4 py-4 rounded-xl bg-solar-paper border border-solar-border text-xs font-mono text-solar-forest"
+                         />
+                         <p className="text-[9px] text-solar-sage mt-2 italic px-1">Define `NEXUS_API_SECRET` in your environment to override this development key.</p>
+                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+                       <div className="p-4 bg-solar-paper border border-solar-border rounded-xl">
+                          <p className="text-[8px] font-black uppercase text-solar-sage mb-1">Status</p>
+                          <p className="text-xs font-bold text-green-600 flex items-center gap-1">
+                             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Bridge Active
+                          </p>
+                       </div>
+                       <div className="p-4 bg-solar-paper border border-solar-border rounded-xl">
+                          <p className="text-[8px] font-black uppercase text-solar-sage mb-1">Protocol</p>
+                          <p className="text-xs font-bold text-solar-forest">JSON REST</p>
+                       </div>
+                    </div>
+                 </div>
               </div>
             )}
 

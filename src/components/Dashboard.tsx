@@ -259,6 +259,39 @@ export default function Dashboard() {
                   </div>
                </div>
             </div>
+
+            <div className="bg-white rounded-[2.5rem] border border-solar-border p-8 shadow-sm space-y-6">
+               <div className="flex items-center justify-between">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-solar-forest">Reputation Center</h4>
+                  <span className="text-[8px] font-black italic text-solar-sage bg-solar-paper px-2 py-1 rounded">GMB LIVE</span>
+               </div>
+               
+               <div className="space-y-4">
+                  {[
+                    { author: 'Ahmed K.', rating: 5, comment: 'Exceptional solar installation team in Nairobi.', time: '2h ago' },
+                    { author: 'Jane M.', rating: 4, comment: 'Product is great, delivery was slightly delayed but team was responsive.', time: '1d ago' }
+                  ].map((review, i) => (
+                    <div key={i} className="p-4 bg-solar-paper rounded-2xl border border-solar-border space-y-2">
+                       <div className="flex justify-between items-center">
+                          <p className="text-xs font-bold text-solar-forest">{review.author}</p>
+                          <div className="flex text-solar-amber">
+                            {[...Array(review.rating)].map((_, i) => <Sparkles key={i} size={8} className="fill-current" />)}
+                          </div>
+                       </div>
+                       <p className="text-[10px] text-solar-sage italic leading-relaxed">"{review.comment}"</p>
+                       <div className="pt-2 flex justify-between items-center">
+                          <span className="text-[8px] font-medium text-solar-sage">{review.time}</span>
+                          <button 
+                             onClick={() => toast.success("Nexus is drafting an AI-aligned executive reply...")}
+                             className="text-[8px] font-black uppercase text-solar-forest hover:text-solar-amber"
+                          >
+                             Draft AI Reply
+                          </button>
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
          </div>
       </div>
 

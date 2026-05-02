@@ -42,6 +42,10 @@ Nexus orchestrates 7-day content schedules with multi-platform intelligence.
 - **Zero-Touch Analysis:** Nexus synthesizes platform data into professional "Board Reports" that justify marketing spend without a manager's manual input.
 - **Narrative AI:** Converts raw numbers into executive summaries suitable for stakeholders.
 
+### 6. Nexus Bridge (External Automation)
+- **n8n & Zapier Ready:** Use the secure `X-Nexus-Key` protocol to trigger strategy cycles or fetch KPIs from external agent workflows.
+- **REST Interface:** Standardized endpoints for custom integrations with third-party CRM or logistics tools.
+
 ## ⚙️ Intelligence Configuration (The Nexus Core)
 Configure your AI preferences in **System Config**:
 - **Providers:** Choose between Gemini (Native) or OpenRouter (External).

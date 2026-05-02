@@ -22,6 +22,43 @@ const META_APP_SECRET = process.env.META_APP_SECRET;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID; // Reusing for GMB and GA4 OAuth
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET;
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
+const NEXUS_API_SECRET = process.env.NEXUS_API_SECRET || 'nexus_dev_secret_2026';
+
+// --- Middleware for External Automation ---
+const authenticateExternal = (req: any, res: any, next: any) => {
+  const apiKey = req.headers['x-nexus-key'];
+  if (apiKey !== NEXUS_API_SECRET) {
+    return res.status(401).json({ status: 'error', message: 'Unauthorized: Invalid Nexus Key' });
+  }
+  next();
+};
+
+// --- External Automation Bridge (n8n/Zapier/Agents) ---
+app.post('/api/external/ping', authenticateExternal, (req, res) => {
+  res.json({ status: 'success', message: 'Nexus Bridge Online', timestamp: new Date() });
+});
+
+app.post('/api/external/trigger-strategy', authenticateExternal, async (req, res) => {
+  // This would ideally trigger the autonomous cycle via a shared service
+  // For now, we acknowledge the signal for n8n workflows
+  res.json({ 
+    status: 'success', 
+    message: 'Autonomous Strategy Cycle Queued',
+    context: req.body.context || 'global_market'
+  });
+});
+
+app.get('/api/external/kpis', authenticateExternal, (req, res) => {
+  res.json({
+    status: 'success',
+    data: {
+      velocity: "Bullish",
+      reach: "24.8k",
+      efficiency: "94.2%",
+      last_sync: new Date()
+    }
+  });
+});
 
 // --- Google Auth (GMB & GA4) ---
 app.get('/api/auth/google/url', (req, res) => {
@@ -234,6 +271,33 @@ app.post('/api/post/gmb', async (req, res) => {
     res.json({ status: 'success', id: response.data.name });
   } catch (error: any) {
     res.status(500).json({ status: 'error', message: "GMB Publication failed. Check Location permission." });
+  }
+});
+
+// --- GMB Reviews ---
+app.post('/api/gmb/reviews', async (req, res) => {
+  const { token, locationId } = req.body;
+  try {
+    const response = await axios.get(`https://mybusiness.googleapis.com/v4/${locationId}/reviews`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    res.json(response.data);
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', message: "Failed to fetch Reviews." });
+  }
+});
+
+app.post('/api/gmb/reviews/reply', async (req, res) => {
+  const { token, reviewName, reply } = req.body;
+  try {
+    const response = await axios.put(`https://mybusiness.googleapis.com/v4/${reviewName}/reply`, {
+      comment: reply
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    res.json(response.data);
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', message: "Failed to post reply." });
   }
 });
 

@@ -106,6 +106,7 @@ export default function App() {
     { id: 'ai', label: 'Intelligence Studio', icon: PlusSquare },
     { id: 'ads', label: 'Growth Engine', icon: Megaphone },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'settings', label: 'Nexus Bridge & Config', icon: Settings },
   ];
 
   return (
@@ -203,18 +204,7 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-4 pointer-events-auto">
-            <button 
-              onClick={() => setActiveView('settings')}
-              className={cn(
-                "h-12 px-5 flex items-center gap-3 rounded-2xl border transition-all shadow-sm font-bold text-[10px] uppercase tracking-widest",
-                activeView === 'settings' 
-                  ? "bg-solar-forest text-white border-solar-forest" 
-                  : "bg-white text-solar-forest border-solar-border hover:shadow-md"
-              )}
-            >
-              <Settings className="w-4 h-4" />
-              System Config
-            </button>
+            {/* Action buttons could go here */}
           </div>
         </header>
 
