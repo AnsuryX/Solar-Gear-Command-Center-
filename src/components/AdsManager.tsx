@@ -31,6 +31,7 @@ import {
 } from 'firebase/firestore';
 import { db, auth, OperationType, handleFirestoreError } from '../lib/firebase';
 import { toast } from 'react-hot-toast';
+import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   BarChart, 

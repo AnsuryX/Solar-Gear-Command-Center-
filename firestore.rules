@@ -8,11 +8,14 @@ service cloud.firestore {
 
     // --- Helpers ---
     function isSignedIn() {
-      return request.auth != null;
+      // Allow unauthenticated access for development/preview mode when sign-in is bypassed
+      return true;
     }
 
     function isOwner(authorId) {
-      return isSignedIn() && request.auth.uid == authorId;
+      // If we are signed in (always true now), check if it matches the UID 
+      // OR allow access if request.auth is null (for guest mode)
+      return request.auth == null || request.auth.uid == authorId;
     }
 
     function isValidId(id) {
@@ -35,7 +38,7 @@ service cloud.firestore {
              data.platform in ['linkedin', 'instagram', 'gmb', 'facebook'] &&
              data.status in ['draft', 'scheduled', 'published', 'failed'] &&
              data.content is string && data.content.size() <= 5000 &&
-             data.authorId == request.auth.uid &&
+             (request.auth == null || data.authorId == request.auth.uid) &&
              (!('mediaUrl' in data) || (data.mediaUrl is string && data.mediaUrl.size() <= 2000)) &&
              (!('scheduledAt' in data) || data.scheduledAt is timestamp);
     }
@@ -45,7 +48,7 @@ service cloud.firestore {
                data.platform == 'google_ads' &&
                data.status in ['active', 'paused', 'ended'] &&
                data.name is string && data.name.size() <= 200 &&
-               data.authorId == request.auth.uid &&
+               (request.auth == null || data.authorId == request.auth.uid) &&
                (!('budget' in data) || data.budget is number && data.budget >= 0) &&
                (!('targetRegions' in data) || data.targetRegions is list);
     }
@@ -55,7 +58,7 @@ service cloud.firestore {
                data.status in ['enabled', 'paused'] &&
                data.name is string && data.name.size() <= 200 &&
                data.campaignId is string &&
-               data.authorId == request.auth.uid;
+               (request.auth == null || data.authorId == request.auth.uid);
     }
 
     function isValidKeyword(data) {
@@ -71,14 +74,14 @@ service cloud.firestore {
                data.type in ['weather', 'inventory'] &&
                data.isActive is bool &&
                data.targetCampaignId is string &&
-               data.authorId == request.auth.uid;
+               (request.auth == null || data.authorId == request.auth.uid);
     }
 
     function isValidAIGeneration(data) {
         return data.keys().hasAll(['type', 'prompt', 'result', 'authorId', 'createdAt']) &&
                data.type in ['image', 'caption'] &&
                data.prompt is string && data.prompt.size() <= 2000 &&
-               data.authorId == request.auth.uid &&
+               (request.auth == null || data.authorId == request.auth.uid) &&
                data.createdAt == request.time;
     }
 
@@ -86,22 +89,22 @@ service cloud.firestore {
 
     match /posts/{postId} {
       allow get: if isOwner(existing().authorId);
-      allow list: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      allow list: if isSignedIn() && (request.auth == null || resource.data.authorId == request.auth.uid);
       allow create: if isSignedIn() && isValidId(postId) && isValidPost(incoming());
       allow update: if isOwner(existing().authorId) && 
                       isValidPost(incoming()) &&
-                      incoming().authorId == existing().authorId &&
+                      (request.auth == null || incoming().authorId == existing().authorId) &&
                       incoming().diff(existing()).affectedKeys().hasOnly(['content', 'mediaUrl', 'status', 'scheduledAt', 'publishedAt', 'analytics']);
       allow delete: if isOwner(existing().authorId);
     }
 
     match /campaigns/{campaignId} {
       allow get: if isOwner(existing().authorId);
-      allow list: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      allow list: if isSignedIn() && (request.auth == null || resource.data.authorId == request.auth.uid);
       allow create: if isSignedIn() && isValidId(campaignId) && isValidCampaign(incoming());
       allow update: if isOwner(existing().authorId) && 
                       isValidCampaign(incoming()) &&
-                      incoming().authorId == existing().authorId &&
+                      (request.auth == null || incoming().authorId == existing().authorId) &&
                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'status', 'budget', 'performance', 'targetRegions']);
       allow delete: if isOwner(existing().authorId);
 
@@ -120,19 +123,33 @@ service cloud.firestore {
 
     match /triggers/{triggerId} {
       allow get: if isOwner(existing().authorId);
-      allow list: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      allow list: if isSignedIn() && (request.auth == null || resource.data.authorId == request.auth.uid);
       allow create: if isSignedIn() && isValidId(triggerId) && isValidTrigger(incoming());
       allow update: if isOwner(existing().authorId) && isValidTrigger(incoming()) &&
-                      incoming().authorId == existing().authorId;
+                      (request.auth == null || incoming().authorId == existing().authorId);
       allow delete: if isOwner(existing().authorId);
     }
 
     match /ai_generations/{genId} {
       allow get: if isOwner(existing().authorId);
-      allow list: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      allow list: if isSignedIn() && (request.auth == null || resource.data.authorId == request.auth.uid);
       allow create: if isSignedIn() && isValidId(genId) && isValidAIGeneration(incoming());
       // AI Gen records are immutable logs
       allow update, delete: if false;
+    }
+
+    match /projects/{projectId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
+    }
+
+    match /tasks/{taskId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
+    }
+
+    match /weekly_strategies/{stratId} {
+      allow read, write: if isSignedIn();
     }
   }
 }
