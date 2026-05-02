@@ -55,5 +55,5 @@ Ensure your developers ports authorize these URIs:
 
 ## 5. Security Protocols
 - All tokens are stored in `localStorage` for privacy (Zero-Server-Storage approach).
-- Firebase Security Rules are managed via `firestore.rules`.
+- Firebase Security Rules manage access to `projects`, `tasks`, and content collections.
 - Ensure `NODE_ENV=production` is set to serve static assets from `/dist`.

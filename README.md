@@ -34,7 +34,11 @@ Nexus orchestrates 7-day content schedules with multi-platform intelligence.
 - **Autonomous Goal Synthesis:** Instead of just showing charts, the AI analyzes traffic patterns to suggest "Growth Reversals"—tactical shifts in strategy to maximize ROI.
 - **Unified Google Auth:** One single handshake grants Nexus access to both local business updates (GMB) and global traffic data (GA4).
 
-### 5. Executive reporting (The Board Report)
+### 6. Command Center (AI-Driven CRM)
+- **Signal Multiplier:** Initialize strategic objectives (e.g., "Nairobi Growth") and let Nexus architect the tactical "Action Deck" (Task List).
+- **Project Orchestration:** Track tasks from Backlog to Deployment with AI-assisted status synthesis.
+
+### 7. Executive reporting (The Board Report)
 - **Zero-Touch Analysis:** Nexus synthesizes platform data into professional "Board Reports" that justify marketing spend without a manager's manual input.
 - **Narrative AI:** Converts raw numbers into executive summaries suitable for stakeholders.
 
