@@ -121,51 +121,62 @@ export default function ProjectCenter() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-12 space-y-12">
-      <header className="flex justify-between items-end">
+    <div className="max-w-7xl mx-auto py-12 space-y-12 relative">
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-solar-amber/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-solar-forest/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+
+      <header className="flex justify-between items-end relative z-10">
         <div>
-           <h1 className="text-6xl font-serif font-bold text-solar-forest tracking-tighter">Command Center</h1>
-           <p className="text-solar-sage mt-2 italic font-serif text-lg">Strategic project orchestration & autonomous tasking.</p>
+           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-solar-amber mb-2">
+             <span className="w-8 h-[1px] bg-solar-amber" />
+             Strategic Orchestration
+           </div>
+           <h1 className="text-6xl font-serif font-bold text-solar-forest tracking-tighter">Command CRM</h1>
+           <p className="text-solar-sage mt-2 italic font-serif text-lg">Architect tactical actions from global market signals.</p>
         </div>
         <button 
           onClick={() => setIsNewProjectModalOpen(true)}
-          className="bg-solar-amber text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-solar-amber/30 hover:-translate-y-1 transition-all flex items-center gap-3"
+          className="bg-solar-amber text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-solar-amber/30 hover:-translate-y-1 transition-all flex items-center gap-3 active:scale-95"
         >
           <Plus className="w-5 h-5" />
           Initialize Project
         </button>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
         {/* Project List */}
         <div className="lg:col-span-4 space-y-6">
-           <div className="bg-white rounded-[2.5rem] border border-solar-border p-8 shadow-sm h-full">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-solar-sage mb-8">Active Blueprints</h3>
-              <div className="space-y-4">
+           <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] border border-solar-border p-8 shadow-sm h-full flex flex-col">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-solar-sage mb-8 ml-2">Active Blueprints</h3>
+              <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar-thin">
                  {projects.map(project => (
                    <button 
                      key={project.id}
                      onClick={() => setSelectedProjectId(project.id)}
                      className={cn(
-                       "w-full text-left p-6 rounded-3xl border transition-all flex items-center justify-between group",
+                       "w-full text-left p-6 rounded-3xl border transition-all flex items-center justify-between group relative overflow-hidden",
                        selectedProjectId === project.id 
-                         ? "bg-solar-forest text-white border-solar-forest shadow-xl" 
-                         : "bg-solar-paper border-solar-border hover:bg-white"
+                         ? "bg-solar-forest text-white border-solar-forest shadow-2xl shadow-solar-forest/20" 
+                         : "bg-solar-paper border-solar-border hover:bg-white hover:border-solar-amber/30"
                      )}
                    >
-                      <div>
+                      <div className="relative z-10">
                         <h4 className="font-serif font-bold text-lg">{project.title}</h4>
-                        <p className={cn("text-[10px] mt-1 font-medium", selectedProjectId === project.id ? "text-white/60" : "text-solar-sage")}>
-                          {project.status.toUpperCase()}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className={cn("w-1.5 h-1.5 rounded-full", project.status === 'active' ? "bg-green-500 animate-pulse" : "bg-solar-sage")} />
+                          <p className={cn("text-[9px] font-black uppercase tracking-widest", selectedProjectId === project.id ? "text-white/60" : "text-solar-sage")}>
+                            {project.status}
+                          </p>
+                        </div>
                       </div>
-                      <ChevronRight className={cn("w-5 h-5 transition-transform", selectedProjectId === project.id ? "translate-x-1" : "opacity-0 group-hover:opacity-100")} />
+                      <ChevronRight className={cn("w-5 h-5 transition-transform relative z-10", selectedProjectId === project.id ? "translate-x-1" : "opacity-0 group-hover:opacity-100 group-hover:translate-x-1 text-solar-amber")} />
                    </button>
                  ))}
                  {projects.length === 0 && (
                    <div className="py-20 text-center opacity-40 grayscale space-y-4">
-                      <Briefcase className="w-12 h-12 mx-auto" />
-                      <p className="font-serif italic text-lg">No active signals.</p>
+                      <Briefcase className="w-12 h-12 mx-auto text-solar-forest" />
+                      <p className="font-serif italic text-lg text-solar-sage">No active objectives.</p>
                    </div>
                  )}
               </div>
@@ -173,23 +184,33 @@ export default function ProjectCenter() {
         </div>
 
         {/* Task Deck */}
-        <div className="lg:col-span-8 flex flex-col">
+        <div className="lg:col-span-8 flex flex-col h-full">
            {selectedProjectId ? (
-             <div className="bg-white rounded-[3rem] border border-solar-border p-10 shadow-sm flex-1 flex flex-col relative overflow-hidden">
-                <div className="mb-10">
-                   <div className="flex items-center justify-between mb-2">
-                       <h2 className="text-3xl font-serif font-bold text-solar-forest">
-                         {projects.find(p => p.id === selectedProjectId)?.title}
-                       </h2>
-                       <div className="px-4 py-2 bg-solar-paper rounded-xl border border-solar-border flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
-                          <span className="text-[10px] font-black text-solar-sage">{tasks.filter(t => t.status === 'completed').length}/{tasks.length} Completed</span>
+             <div className="bg-white rounded-[3rem] border border-solar-border p-10 shadow-xl shadow-solar-forest/5 flex-1 flex flex-col relative overflow-hidden h-full">
+                <div className="absolute top-0 right-0 p-10 opacity-5">
+                   <Target className="w-64 h-64" />
+                </div>
+                
+                <div className="mb-10 relative z-10">
+                   <div className="flex items-center justify-between mb-4">
+                       <div>
+                          <h2 className="text-4xl font-serif font-bold text-solar-forest tracking-tight">
+                            {projects.find(p => p.id === selectedProjectId)?.title}
+                          </h2>
+                          <p className="text-solar-sage italic text-sm mt-1 max-w-lg">{projects.find(p => p.id === selectedProjectId)?.description}</p>
+                       </div>
+                       <div className="flex flex-col items-end gap-2">
+                          <div className="px-4 py-2 bg-solar-paper rounded-xl border border-solar-border flex items-center gap-2 shadow-sm">
+                             <CheckCircle2 className="w-4 h-4 text-green-500" />
+                             <span className="text-[10px] font-black text-solar-forest uppercase tracking-widest">
+                               {tasks.filter(t => t.status === 'completed').length} / {tasks.length} Deployed
+                             </span>
+                          </div>
                        </div>
                    </div>
-                   <p className="text-solar-sage italic text-sm">{projects.find(p => p.id === selectedProjectId)?.description}</p>
                 </div>
 
-                <div className="flex-1 space-y-4 overflow-y-auto pr-4 custom-scrollbar">
+                <div className="flex-1 space-y-4 overflow-y-auto pr-4 custom-scrollbar relative z-10 min-h-[400px]">
                    {tasks.map((task, i) => (
                      <motion.div 
                        key={task.id}
@@ -198,33 +219,42 @@ export default function ProjectCenter() {
                        transition={{ delay: i * 0.05 }}
                        className={cn(
                         "p-6 rounded-2xl border flex items-center justify-between group transition-all",
-                        task.status === 'completed' ? "bg-solar-paper/50 border-solar-border opacity-60" : "bg-white border-solar-border hover:shadow-md"
+                        task.status === 'completed' 
+                          ? "bg-solar-paper/40 border-solar-border/50 opacity-60" 
+                          : "bg-white border-solar-border hover:border-solar-amber/50 hover:shadow-lg hover:shadow-solar-amber/5"
                        )}
                      >
-                        <div className="flex items-center gap-5">
+                        <div className="flex items-center gap-6">
                            <button 
                              onClick={() => toggleTaskStatus(task.id, task.status)}
                              className={cn(
-                               "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
-                               task.status === 'completed' ? "bg-solar-amber border-solar-amber text-white" : "border-solar-border hover:border-solar-amber"
+                               "w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all",
+                               task.status === 'completed' 
+                                 ? "bg-solar-amber border-solar-amber text-white shadow-lg shadow-solar-amber/30" 
+                                 : "border-solar-border hover:border-solar-amber hover:bg-solar-amber/5 text-transparent hover:text-solar-amber/30"
                              )}
                            >
-                             {task.status === 'completed' && <CheckCircle2 size={14} />}
+                              <CheckCircle2 size={16} />
                            </button>
                            <div>
-                             <p className={cn("text-base font-bold", task.status === 'completed' ? "line-through text-solar-sage" : "text-solar-forest")}>
+                             <p className={cn("text-lg font-serif font-bold", task.status === 'completed' ? "line-through text-solar-sage" : "text-solar-forest")}>
                                {task.title}
                              </p>
-                             <span className={cn(
-                               "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mt-1 inline-block",
-                               task.priority === 'high' ? "bg-rose-100 text-rose-600" : "bg-solar-paper text-solar-sage"
-                             )}>
-                               Priority: {task.priority}
-                             </span>
+                             <div className="flex items-center gap-3 mt-1.5">
+                               <span className={cn(
+                                 "text-[8px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-full",
+                                 task.priority === 'high' ? "bg-rose-100 text-rose-600" : "bg-solar-paper text-solar-sage"
+                               )}>
+                                 {task.priority} Priority
+                               </span>
+                               {task.status === 'backlog' && (
+                                 <span className="text-[8px] font-bold text-solar-amber italic">Staged for execution</span>
+                               )}
+                             </div>
                            </div>
                         </div>
-                        <button className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-solar-paper rounded-lg">
-                           <MoreVertical size={16} className="text-solar-sage" />
+                        <button className="opacity-0 group-hover:opacity-100 transition-all p-2 hover:bg-solar-paper rounded-xl">
+                           <MoreVertical size={18} className="text-solar-sage" />
                         </button>
                      </motion.div>
                    ))}
@@ -275,6 +305,29 @@ export default function ProjectCenter() {
                 </div>
 
                 <form onSubmit={handleCreateProject} className="space-y-6">
+                   <div className="flex gap-2 overflow-x-auto pb-4 custom-scrollbar-thin">
+                      {[
+                        { t: 'Market Entry', d: 'Architect a 30-day strategy to capture commercial solar leads in a new territory using local GMB and target LinkedIn ads.' },
+                        { t: 'Retention Loop', d: 'Analyze existing client base to automate review collection and secondary upsell transmissions.' },
+                        { t: 'Supply Optimization', d: 'Sync logistics inventory signals with ad spend to ensure zero-waste growth engine performance.' }
+                      ].map(template => (
+                        <button 
+                          key={template.t}
+                          type="button"
+                          onClick={() => {
+                            const titleInput = document.getElementsByName('title')[0] as HTMLInputElement;
+                            const descInput = document.getElementsByName('description')[0] as HTMLTextAreaElement;
+                            if (titleInput) titleInput.value = template.t;
+                            if (descInput) descInput.value = template.d;
+                            toast.success(`Signal template: ${template.t} applied.`);
+                          }}
+                          className="flex-shrink-0 px-4 py-2 bg-solar-paper border border-solar-border rounded-xl text-[8px] font-black uppercase text-solar-sage hover:bg-solar-amber hover:text-white transition-all"
+                        >
+                          {template.t}
+                        </button>
+                      ))}
+                   </div>
+
                    <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage ml-1">Project Title</label>
                       <input 

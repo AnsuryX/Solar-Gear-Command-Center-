@@ -13,3 +13,27 @@
   --color-solar-paper: #F9F8F3;
   --color-solar-border: #E2E1D8;
 }
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #E2E1D8;
+    border-radius: 10px;
+  }
+  .custom-scrollbar-thin::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+  }
+  .custom-scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #E6AA3E;
+    border-radius: 10px;
+  }
+}

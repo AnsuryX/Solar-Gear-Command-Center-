@@ -116,30 +116,135 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Performance Tickers */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[
-          { label: 'Market Sentiment', val: 'Bullish', icon: TrendingUp, color: 'text-green-600' },
-          { label: 'Network Reach', val: '24.8k', icon: Users, color: 'text-solar-forest' },
-          { label: 'Signals Captured', val: '142', icon: Zap, color: 'text-solar-amber' },
-          { label: 'ROAS Index', val: '5.2x', icon: ArrowUpRight, color: 'text-solar-forest' },
-        ].map((stat, i) => (
-          <motion.div 
-            key={stat.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-white p-6 rounded-3xl border border-solar-border shadow-sm flex items-center gap-4 hover:shadow-md transition-all"
-          >
-            <div className={cn("w-12 h-12 rounded-2xl bg-solar-paper flex items-center justify-center", stat.color)}>
-               <stat.icon size={20} />
-            </div>
+      {/* Bento Grid */}
+      <div className="grid grid-cols-12 gap-6 min-h-[700px]">
+        
+        {/* Main Performance Chart - Large Tile */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="col-span-12 lg:col-span-8 bg-white rounded-[3rem] border border-solar-border p-10 flex flex-col shadow-[0_4px_30px_rgba(0,0,0,0.02)] relative overflow-hidden group"
+        >
+          <div className="absolute top-0 right-0 p-10 opacity-[0.03] -translate-y-10 translate-x-10 group-hover:translate-x-0 transition-transform duration-1000">
+            <TrendingUp className="w-80 h-80" />
+          </div>
+          
+          <div className="flex items-center justify-between mb-12 relative z-10">
             <div>
-               <p className="text-[10px] font-black uppercase tracking-widest text-solar-sage">{stat.label}</p>
-               <p className="text-xl font-serif font-black text-solar-forest">{stat.val}</p>
+              <h2 className="font-serif text-3xl text-solar-forest tracking-tight">Campaign Velocity</h2>
+              <p className="text-solar-sage text-[10px] font-black uppercase tracking-widest mt-1">Rolling 7-day conversion lift</p>
+            </div>
+            <div className="flex gap-6">
+               <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-solar-sage text-amber-600">
+                  <div className="w-2.5 h-2.5 bg-solar-amber rounded-full shadow-sm animate-pulse" /> AI Accelerated
+               </span>
+            </div>
+          </div>
+
+          <div className="flex-1 min-h-[300px] relative z-10">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorOrganic" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2A2C24" stopOpacity={0.05}/>
+                    <stop offset="95%" stopColor="#2A2C24" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorPaid" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#E6AA3E" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#E6AA3E" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E1D8" opacity={0.5} />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#8B8D7F', fontSize: 9, fontWeight: 900}} 
+                  dy={15} 
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#8B8D7F', fontSize: 9, fontWeight: 900}} 
+                />
+                <Tooltip 
+                   cursor={{ stroke: '#E6AA3E', strokeWidth: 1 }}
+                   contentStyle={{ 
+                     borderRadius: '24px', 
+                     border: '1px solid #E2E1D8', 
+                     boxShadow: '0 20px 40px rgba(0,0,0,0.08)', 
+                     backgroundColor: '#fff',
+                     padding: '20px'
+                   }}
+                />
+                <Area type="monotone" dataKey="organic" stroke="#2A2C24" strokeWidth={4} fillOpacity={1} fill="url(#colorOrganic)" />
+                <Area type="monotone" dataKey="paid" stroke="#E6AA3E" strokeWidth={4} fillOpacity={1} fill="url(#colorPaid)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-solar-border/50 relative z-10">
+             {[
+               { label: 'Avg ROAS', val: '4.2x', trend: '+0.4' },
+               { label: 'CPA Target', val: '$12.4', trend: '-2.1' },
+               { label: 'Conv. Yield', val: '5.8%', trend: '+1.2' }
+             ].map(i => (
+               <div key={i.label}>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-solar-sage">{i.label}</p>
+                 <div className="flex items-baseline gap-2">
+                   <span className="text-2xl font-serif font-bold text-solar-forest">{i.val}</span>
+                   <span className="text-[10px] font-bold text-solar-amber">{i.trend}</span>
+                 </div>
+               </div>
+             ))}
+          </div>
+        </motion.div>
+
+        {/* Small Stat Cards Integrated into Bento */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            whileHover={{ y: -5 }}
+            className="flex-1 p-8 bg-solar-amber text-white rounded-[2.5rem] shadow-xl shadow-solar-amber/30 flex flex-col justify-between overflow-hidden relative group"
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-125 transition-transform">
+               <Zap className="w-32 h-32 rotate-12" />
+            </div>
+            <div className="relative z-10">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">System Efficiency</p>
+              <h3 className="text-5xl font-serif font-bold mt-2 tracking-tighter">94.2%</h3>
+            </div>
+            <div className="relative z-10 flex items-center gap-2 text-xs font-bold mt-8">
+              <div className="px-3 py-1 bg-white/20 rounded-full backdrop-blur-md flex items-center gap-1 text-[10px] uppercase font-black tracking-widest">
+                <ArrowUpRight className="w-3 h-3" /> 12% Lift
+              </div>
+              <span className="text-[10px] font-medium opacity-60">Manual override inhibited</span>
             </div>
           </motion.div>
-        ))}
+
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex-1 p-8 bg-solar-forest text-white rounded-[2.5rem] shadow-xl shadow-solar-forest/30 flex flex-col justify-between overflow-hidden relative group"
+          >
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+            <div className="relative z-10">
+               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-solar-sage">Target Market</p>
+               <h3 className="text-3xl font-serif font-bold mt-2 tracking-tight">Nairobi, KE</h3>
+            </div>
+            <div className="relative z-10 mt-8 flex justify-between items-end">
+               <div>
+                 <p className="text-[9px] font-black uppercase tracking-widest text-solar-sage">Avg CTR</p>
+                 <p className="text-xl font-bold">12.4%</p>
+               </div>
+               <div className="h-12 w-12 bg-solar-amber rounded-2xl flex items-center justify-center shadow-lg shadow-solar-amber/30">
+                 <ArrowUpRight className="w-6 h-6 font-bold" />
+               </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
 
       {/* Nexus Intelligence Grid */}
@@ -239,21 +344,24 @@ export default function Dashboard() {
                </div>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] border border-solar-border p-8 shadow-sm flex flex-col items-center text-center space-y-6">
-               <div className="w-16 h-16 bg-solar-paper rounded-2xl flex items-center justify-center text-solar-forest">
+            <div className="bg-white rounded-[2.5rem] border border-solar-border p-8 shadow-sm flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-4 opacity-[0.05]">
+                  <Globe className="w-32 h-32" />
+               </div>
+               <div className="w-16 h-16 bg-solar-paper rounded-2xl flex items-center justify-center text-solar-forest relative z-10">
                   <Globe className="w-8 h-8" />
                </div>
-               <div>
+               <div className="relative z-10">
                   <h4 className="font-serif font-bold text-lg text-solar-forest">System Integrity</h4>
                   <p className="text-[10px] text-solar-sage font-medium uppercase mt-1">Autonomous Uptime: 99.9%</p>
                </div>
-               <div className="w-full h-[1px] bg-solar-border" />
-               <div className="grid grid-cols-2 w-full gap-4">
-                  <div className="p-4 bg-solar-paper rounded-2xl">
+               <div className="w-full h-[1px] bg-solar-border relative z-10" />
+               <div className="grid grid-cols-2 w-full gap-4 relative z-10">
+                  <div className="p-4 bg-solar-paper rounded-2xl border border-solar-border/30">
                      <p className="text-[8px] font-black text-solar-sage uppercase mb-1">Signals</p>
                      <p className="text-lg font-serif font-black text-solar-forest">1.2k</p>
                   </div>
-                  <div className="p-4 bg-solar-paper rounded-2xl">
+                  <div className="p-4 bg-solar-paper rounded-2xl border border-solar-border/30">
                      <p className="text-[8px] font-black text-solar-sage uppercase mb-1">Growth</p>
                      <p className="text-lg font-serif font-black text-solar-amber">+18%</p>
                   </div>

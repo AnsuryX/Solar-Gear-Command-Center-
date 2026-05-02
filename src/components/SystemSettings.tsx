@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Settings, Cpu, ShieldCheck, Zap, Key } from 'lucide-react';
+import React, { useState } from 'react';
+import { Cpu, ShieldCheck, Zap, Key } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -28,8 +28,12 @@ export default function SystemSettings() {
   return (
     <div className="max-w-4xl mx-auto py-12 space-y-12">
       <header>
-        <h1 className="text-5xl font-serif font-bold text-solar-forest tracking-tighter">System Configuration</h1>
-        <p className="text-solar-sage mt-2 italic font-serif text-lg">Calibrate the Nexus intelligence core and security protocols.</p>
+        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-solar-amber mb-2">
+          <span className="w-8 h-[1px] bg-solar-amber" />
+          System Parameters
+        </div>
+        <h1 className="text-5xl font-serif font-bold text-solar-forest tracking-tighter">Nexus Configuration</h1>
+        <p className="text-solar-sage mt-2 italic font-serif text-lg">Calibrate the intelligence core and automation protocols.</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -65,24 +69,26 @@ export default function SystemSettings() {
         </div>
 
         <div className="md:col-span-3">
-          <div className="bg-white rounded-[2.5rem] border border-solar-border p-12 shadow-sm space-y-10">
+          <div className="bg-white rounded-[2.5rem] border border-solar-border p-12 shadow-sm space-y-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-solar-amber/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            
             {activeTab === 'ai' && (
-              <div className="space-y-8">
+              <div className="space-y-8 relative z-10">
                 <div className="flex items-center justify-between">
                    <div>
                      <h3 className="text-xl font-serif font-bold text-solar-forest">Autonomous Pilot</h3>
-                     <p className="text-xs text-solar-sage mt-1 italic">When enabled, AI will automatically schedule content without approval.</p>
+                     <p className="text-xs text-solar-sage mt-1 italic">When enabled, AI will automatically schedule transmissions without manual approval.</p>
                    </div>
                    <button 
                      onClick={() => setConfig({...config, autonomousMode: !config.autonomousMode})}
                      className={cn(
-                       "w-16 h-8 rounded-full transition-all relative",
+                       "w-16 h-8 rounded-full transition-all relative shadow-inner",
                        config.autonomousMode ? "bg-solar-amber" : "bg-solar-border"
                      )}
                    >
                      <motion.div 
                        animate={{ x: config.autonomousMode ? 32 : 4 }}
-                       className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-sm"
+                       className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md"
                      />
                    </button>
                 </div>
@@ -94,10 +100,10 @@ export default function SystemSettings() {
                        <select 
                          value={config.provider}
                          onChange={(e) => setConfig({...config, provider: e.target.value})}
-                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-bold"
+                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-bold focus:shadow-lg transition-all outline-none"
                        >
-                         <option value="gemini">Gemini (Free tier)</option>
-                         <option value="openrouter">OpenRouter (Multi-model)</option>
+                         <option value="gemini">Gemini (Native)</option>
+                         <option value="openrouter">OpenRouter (External)</option>
                        </select>
                     </div>
                     <div className="space-y-2">
@@ -106,7 +112,7 @@ export default function SystemSettings() {
                          value={config.modelId}
                          onChange={(e) => setConfig({...config, modelId: e.target.value})}
                          placeholder={config.provider === 'gemini' ? 'gemini-1.5-flash' : 'google/gemini-2.0-flash-lite-001'}
-                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-bold"
+                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-bold focus:shadow-lg transition-all outline-none"
                        />
                     </div>
                   </div>
@@ -114,16 +120,14 @@ export default function SystemSettings() {
                   {config.provider === 'openrouter' && (
                     <div className="space-y-2">
                        <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage">OpenRouter API Key</label>
-                       <div className="flex gap-2">
-                         <div className="relative flex-1">
-                           <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-solar-sage" />
-                           <input 
-                             type="password"
-                             value={config.openrouterKey}
-                             onChange={(e) => setConfig({...config, openrouterKey: e.target.value})}
-                             className="w-full pl-12 pr-4 py-4 rounded-xl bg-solar-paper border-solar-border text-xs font-mono"
-                           />
-                         </div>
+                       <div className="relative">
+                         <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-solar-amber" />
+                         <input 
+                           type="password"
+                           value={config.openrouterKey}
+                           onChange={(e) => setConfig({...config, openrouterKey: e.target.value})}
+                           className="w-full pl-12 pr-4 py-4 rounded-xl bg-solar-paper border-solar-border text-xs font-mono focus:shadow-lg transition-all outline-none"
+                         />
                        </div>
                     </div>
                   )}
@@ -135,7 +139,7 @@ export default function SystemSettings() {
                          value={config.brandVoice}
                          onChange={(e) => setConfig({...config, brandVoice: e.target.value})}
                          rows={2}
-                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-medium resize-none"
+                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-medium resize-none focus:shadow-lg transition-all outline-none"
                          placeholder="e.g. Technical, Elite, Disruptive"
                        />
                     </div>
@@ -145,7 +149,7 @@ export default function SystemSettings() {
                          value={config.brandTone}
                          onChange={(e) => setConfig({...config, brandTone: e.target.value})}
                          rows={2}
-                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-medium resize-none"
+                         className="w-full p-4 rounded-xl bg-solar-paper border-solar-border text-xs font-medium resize-none focus:shadow-lg transition-all outline-none"
                          placeholder="e.g. ROI-focused, educational"
                        />
                     </div>
@@ -155,57 +159,65 @@ export default function SystemSettings() {
             )}
 
             {activeTab === 'security' && (
-              <div className="space-y-8">
-                 <div className="p-6 bg-solar-paper rounded-2xl border border-solar-border italic text-sm text-solar-sage leading-relaxed">
-                   Nexus uses a <strong>Zero-Server-Storage</strong> protocol for social tokens. However, for external automation (n8n, Zapier), you can use the <strong>Nexus Bridge</strong> API key to trigger cycles from external agents.
+              <div className="space-y-8 relative z-10">
+                 <div className="p-6 bg-solar-paper/50 rounded-3xl border border-solar-amber/20 backdrop-blur-sm italic text-sm text-solar-sage leading-relaxed shadow-inner">
+                   Nexus uses a <strong>Zero-Server-Storage</strong> protocol for social tokens. However, for external automation (n8n, Zapier), you can use the <strong>Nexus Bridge</strong> API key to trigger strategic cycles from external agents.
                  </div>
 
-                 <div className="space-y-6">
+                 <div className="space-y-8">
                     <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage">Bridge Endpoint (Webhook Target)</label>
-                       <div className="w-full p-4 rounded-xl bg-solar-paper border border-solar-border text-xs font-mono text-solar-forest break-all">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage ml-1">Bridge Endpoint (Webhook Target)</label>
+                       <div className="w-full p-5 rounded-2xl bg-solar-paper border border-solar-border text-xs font-mono text-solar-forest break-all shadow-sm">
                           {window.location.origin}/api/external/trigger-strategy
                        </div>
                     </div>
 
                     <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage">Nexus Bridge Key (X-Nexus-Key)</label>
+                       <label className="text-[10px] font-black uppercase tracking-widest text-solar-sage ml-1">Nexus Bridge Key (X-Nexus-Key)</label>
                        <div className="relative group">
-                         <div className="absolute inset-y-0 left-4 flex items-center text-solar-sage">
-                           <Key size={14} />
+                         <div className="absolute inset-y-0 left-5 flex items-center text-solar-amber">
+                           <Key size={16} />
                          </div>
                          <input 
                            readOnly
                            value="nexus_dev_secret_2026"
-                           className="w-full pl-10 pr-4 py-4 rounded-xl bg-solar-paper border border-solar-border text-xs font-mono text-solar-forest"
+                           className="w-full pl-12 pr-12 py-5 rounded-2xl bg-white border-2 border-solar-paper text-xs font-mono text-solar-forest shadow-sm group-hover:border-solar-amber/30 transition-all cursor-pointer"
+                           onClick={() => {
+                             navigator.clipboard.writeText("nexus_dev_secret_2026");
+                             toast.success("Bridge key cloned to subspace.");
+                           }}
                          />
-                         <p className="text-[9px] text-solar-sage mt-2 italic px-1">Define `NEXUS_API_SECRET` in your environment to override this development key.</p>
+                         <div className="absolute inset-y-0 right-5 flex items-center text-[7px] font-black uppercase text-solar-sage/50 group-hover:text-solar-amber transition-all pointer-events-none opacity-0 group-hover:opacity-100 uppercase tracking-widest">
+                            Copy
+                         </div>
+                         <p className="text-[9px] text-solar-sage mt-2 italic px-2">Define `NEXUS_API_SECRET` in your environment to override this development key.</p>
                        </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-4">
-                       <div className="p-4 bg-solar-paper border border-solar-border rounded-xl">
-                          <p className="text-[8px] font-black uppercase text-solar-sage mb-1">Status</p>
-                          <p className="text-xs font-bold text-green-600 flex items-center gap-1">
-                             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Bridge Active
-                          </p>
+                    <div className="grid grid-cols-2 gap-6 pt-4">
+                       <div className="p-5 bg-solar-paper/30 border border-solar-border rounded-2xl shadow-sm">
+                          <h5 className="text-[8px] font-black uppercase text-solar-sage mb-2 tracking-[0.2em]">Bridge Status</h5>
+                          <div className="text-xs font-bold text-green-600 flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-sm shadow-green-500/50" /> 
+                             Operational
+                          </div>
                        </div>
-                       <div className="p-4 bg-solar-paper border border-solar-border rounded-xl">
-                          <p className="text-[8px] font-black uppercase text-solar-sage mb-1">Protocol</p>
-                          <p className="text-xs font-bold text-solar-forest">JSON REST</p>
+                       <div className="p-5 bg-solar-paper/30 border border-solar-border rounded-2xl shadow-sm">
+                          <h5 className="text-[8px] font-black uppercase text-solar-sage mb-2 tracking-[0.2em]">Protocol Architecture</h5>
+                          <div className="text-xs font-bold text-solar-forest uppercase">Secure JSON REST</div>
                        </div>
                     </div>
                  </div>
               </div>
             )}
 
-            <div className="pt-8 flex justify-end">
+            <div className="pt-8 flex justify-end relative z-10">
                <button 
                  onClick={saveConfig}
-                 className="bg-solar-forest text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-1 transition-all flex items-center gap-3"
+                 className="bg-solar-forest text-white px-12 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-solar-forest/20 hover:-translate-y-1 transition-all flex items-center gap-3 active:scale-95"
                >
                  <Zap className="w-4 h-4 text-solar-amber" />
-                 Apply Changes
+                 Apply Configuration
                </button>
             </div>
           </div>
