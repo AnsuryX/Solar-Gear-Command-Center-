@@ -46,7 +46,7 @@ import { db, auth, OperationType, handleFirestoreError } from '../lib/firebase';
 import { Toaster, toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { generateAndPopulateWeeklyCalendar, publishPostNow } from '../services/contentQueueService';
+import { generateAndPopulateWeeklyCalendar, publishPostNow, runAutonomousCycle } from '../services/contentQueueService';
 
 export default function ContentCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -182,23 +182,33 @@ export default function ContentCalendar() {
         </div>
         <div className="flex flex-wrap gap-4">
           <button 
+             onClick={() => {
+               const auto = localStorage.getItem('autonomous_mode') === 'true';
+               if (auto) {
+                  const id = toast.loading("Nexus is architecting an autonomous week...");
+                  runAutonomousCycle(strategyContext)
+                    .then(() => toast.success("Autonomous transmission staged!", { id }))
+                    .catch(() => toast.error("Strategy sync failed.", { id }));
+               } else {
+                  setIsStrategyModalOpen(true);
+               }
+             }}
+             className="bg-solar-amber text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:-translate-y-1 transition-all shadow-xl shadow-solar-amber/20"
+          >
+            <Zap className="w-4 h-4 fill-current" />
+            {localStorage.getItem('autonomous_mode') === 'true' ? 'Auto-Pilot Run' : 'Strategic Blueprint'}
+          </button>
+          <button 
              onClick={() => setIsApprovalOpen(true)}
              className="relative bg-white border border-solar-border px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-solar-forest hover:bg-solar-paper transition-all flex items-center gap-3 shadow-sm"
           >
             <Clock className="w-4 h-4 text-solar-amber" />
-            Queue
+            Review Queue
             {pendingPosts.length > 0 && (
-              <span className="absolute -top-2 -right-2 w-6 h-6 bg-solar-amber text-white flex items-center justify-center rounded-full text-[10px] border-2 border-white shadow-md animate-bounce">
+              <span className="absolute -top-2 -right-2 w-6 h-6 bg-solar-amber text-white flex items-center justify-center rounded-full text-[10px] border-2 border-white shadow-md">
                 {pendingPosts.length}
               </span>
             )}
-          </button>
-          <button 
-             onClick={() => setIsStrategyModalOpen(true)}
-             className="bg-solar-forest text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:-translate-y-1 transition-all shadow-xl shadow-solar-forest/20"
-          >
-            <Sparkles className="w-4 h-4 text-solar-amber" />
-            AI Strategy
           </button>
           <button 
              onClick={() => setIsModalOpen(true)}
@@ -403,7 +413,7 @@ export default function ContentCalendar() {
                    </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar">
+                 <div className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar">
                    {pendingPosts.length === 0 ? (
                      <div className="h-full flex flex-col items-center justify-center text-center space-y-6 grayscale opacity-40">
                         <div className="w-24 h-24 bg-solar-paper rounded-[2rem] flex items-center justify-center border-2 border-dashed border-solar-border">
@@ -429,7 +439,18 @@ export default function ContentCalendar() {
                               <span className="text-[9px] font-black uppercase text-solar-amber">{post.scheduledAt}</span>
                            </div>
 
-                           <p className="font-serif italic text-lg leading-relaxed text-solar-forest">{post.content}</p>
+                           <div className="space-y-4">
+                              <p className="font-serif italic text-lg leading-relaxed text-solar-forest">{post.content}</p>
+                              
+                              {post.imagePrompt && (
+                                <div className="p-4 bg-solar-paper border border-solar-border border-dashed rounded-xl">
+                                   <p className="text-[8px] font-black uppercase tracking-widest text-solar-sage mb-1 flex items-center gap-2">
+                                     <Sparkles className="w-3 h-3" /> Image Strategy
+                                   </p>
+                                   <p className="text-[10px] text-solar-sage italic leading-relaxed">{post.imagePrompt}</p>
+                                </div>
+                              )}
+                           </div>
 
                            <div className="flex gap-4 pt-4">
                               <button 

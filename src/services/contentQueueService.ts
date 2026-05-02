@@ -42,6 +42,38 @@ export const generateAndPopulateWeeklyCalendar = async (context: string) => {
   return { strategyId: stratRef.id, count: strategyPosts.length };
 };
 
+export const runAutonomousCycle = async (context: string) => {
+  if (!auth.currentUser) throw new Error("Authentication required");
+  
+  // 1. Generate Strategy with Image Prompts
+  const strategyPosts = await generateWeeklyStrategy(context);
+  
+  // 2. Save Strategy
+  const stratRef = await addDoc(collection(db, 'weekly_strategies'), {
+    weekStartDate: strategyPosts[0].date,
+    strategyDescription: `Autonomous Mode: ${context}`,
+    authorId: auth.currentUser.uid,
+    createdAt: serverTimestamp(),
+  });
+
+  // 3. Create Posts - Already Approved and Scheduled
+  const postPromises = strategyPosts.map(post => 
+    addDoc(collection(db, 'posts'), {
+      platform: post.platform,
+      content: post.content,
+      imagePrompt: post.imagePrompt,
+      status: 'scheduled', // Auto-approved
+      scheduledAt: post.date,
+      strategyId: stratRef.id,
+      authorId: auth.currentUser.uid,
+      createdAt: serverTimestamp(),
+    })
+  );
+
+  await Promise.all(postPromises);
+  return { strategyId: stratRef.id, count: strategyPosts.length };
+};
+
 export const approveAndSchedulePost = async (postId: string) => {
   if (!auth.currentUser) throw new Error("Authentication required");
   

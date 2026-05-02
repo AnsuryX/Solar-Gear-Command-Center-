@@ -1,58 +1,48 @@
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+import { generateAIResponse } from './aiService';
 
 export interface WeeklyPost {
   day: string;
   platform: 'linkedin' | 'instagram';
   strategy: string;
   content: string;
+  imagePrompt: string;
   date: string;
 }
 
 export const generateWeeklyStrategy = async (brandContext: string): Promise<WeeklyPost[]> => {
+  const systemPrompt = "You are a Strategic Marketing Director for SolaGear Kenya. Develop technical but visually appealing solar energy strategies.";
+  
   const prompt = `
-    You are a Strategic Marketing Director for SolaGear Kenya. 
     Develop a 7-day social media strategy and content for LinkedIn and Instagram.
     
     Brand Context: ${brandContext}
     
     Rules:
-    1. LinkedIn content should be professional, technical, and data-driven (Solar installation ROI, engineering excellence).
-    2. Instagram content should be visual, lifestyle-oriented, and "green energy" aesthetics (Sustainable living, Kenyan sunsets, installation progress).
-    3. Generate 7 specific posts total (alternate between platforms).
+    1. LinkedIn content: Professional, technical, ROI focused.
+    2. Instagram content: Visual, lifestyle, sustainability aesthetics.
+    3. Suggest a detailed "imagePrompt" for each post (e.g., "A wide shot of a commercial solar installation in Nairobi during a golden sunset, focusing on the crystalline panels").
+    4. Generate 7 specific posts total.
     
-    Return ONLY a JSON array of objects with these keys: 
-    "day" (e.g., "Monday"), "platform" ("linkedin" or "instagram"), "strategy", "content" (the actual post), "date" (YYYY-MM-DD starting from next Monday).
+    Return ONLY a JSON array of objects with keys: 
+    "day", "platform" ("linkedin" | "instagram"), "strategy", "content", "imagePrompt", "date" (YYYY-MM-DD).
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-    });
-    const text = response.text || '';
-    
-    // Extract JSON from potential markdown blocks
+    const text = await generateAIResponse(prompt, systemPrompt);
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) throw new Error("Failed to parse AI strategy");
-    
     return JSON.parse(jsonMatch[0]);
   } catch (error) {
-    console.error("Gemini Error:", error);
+    console.error("AI Generation Error:", error);
     throw error;
   }
 };
 
 export const generateAdCampaigns = async (context: string) => {
   const prompt = `Based on this solar context: ${context}, create 3 Google Ads campaign concepts. 
-    Return a JSON array of objects: { name, budget, estimatedReach, status: 'Active', roi: '...' }`;
+    Return a JSON array of objects: { name, budget, estimatedReach, status: 'Active', roi: '...', imageVibe: 'Visual concept description for the ad' }`;
     
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-  });
-  const text = response.text || '';
+  const text = await generateAIResponse(prompt);
   const jsonMatch = text.match(/\[[\s\S]*\]/);
   return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
 };
@@ -65,11 +55,7 @@ export const generateVisionNarrative = async (imageAnalysis: string) => {
     
     Return a JSON object with keys: linkedin, instagram, gmb.`;
     
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-  });
-  const text = response.text || '';
+  const text = await generateAIResponse(prompt);
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   return jsonMatch ? JSON.parse(jsonMatch[0]) : {};
 };

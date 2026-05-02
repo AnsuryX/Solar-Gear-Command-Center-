@@ -13,50 +13,41 @@ Marketing for technical industries like solar energy often suffers from a "Cogni
 ## ✨ Key Features
 
 ### 1. Weekly Strategy Core (AI Analyst)
-Instead of manual planning, Nexus uses Gemini 1.5 Flash to architect a 7-day content schedule.
-- **Corridor Focus:** Input your current market goal (e.g., "Commercial ROI in Nairobi").
-- **Multi-Platform Adaptation:** Automatically generates "Executive Case Studies" for LinkedIn and "Visual Journeys" for Instagram.
-- **Human-in-the-Loop:** All AI content is staged in the **Transmission Queue** for final human approval before going live.
+Nexus orchestrates 7-day content schedules with multi-platform intelligence.
+- **Autonomous Mode:** Enable "Auto-Pilot" to let the AI architect, approve, and stage content completely unattended.
+- **Image Strategy:** Instead of costly auto-generation, AI suggests detailed visual prompts that you can pair with your existing Google Drive assets.
+- **Multi-Model Support:** Toggle between native Gemini 1.5 Flash and OpenRouter (allowing for "Free" or "Lite" models to keep costs at zero).
 
 ### 2. Global Transmissions (Integrated Social)
-- **Direct Linked API:** Connect your LinkedIn profile to publish professional insights directly from the dashboard.
-- **Instagram/Meta Integration:** Manage your brand's visual identity through official Graph API endpoints.
-- **Approval Workflow:** A dedicated slide-out queue allows you to review, edit, or discard AI-generated drafts.
+- **Direct Linked API:** Post professional insights via dedicated OAuth handles.
+- **Instagram/Meta Integration:** Direct Graph API connection for visual brand storytelling.
+- **Transmission Queue:** A specialized review deck with "Image Strategy" sidebars for manual review when not in Auto-Pilot.
 
 ### 3. The Engine Room (Real Ads Intelligence)
-- **Bid Intelligence:** A neural-trigger matrix that suggests ad budget adjustments based on external signals.
+- **Auto-Growth:** Toggle autonomous campaign generation based on regional market signals.
 - **Atmospheric Pulse:** Logic that triggers Cooling Package ads when heatwaves are detected in regional forecasts.
-- **Logistics Guard:** Automatically pauses specific search strings if inventory for related hardware (e.g., inverters) falls below critical levels.
+- **Logistics Guard:** Automatically pauses specific search strings if inventory falls below critical levels.
 
-## 🛠 Tech Stack
-- **Frontend:** React 18, Vite, Tailwind CSS, Motion, Lucide Icons.
-- **Backend:** Express.js (Node.js) with custom OAuth handles.
-- **Database:** Firebase/Firestore for real-time state synchronization.
-- **AI Engine:** Google Gemini (Generative AI SDK).
-- **Social API:** Direct REST integration with LinkedIn and Meta Graph APIs.
+## ⚙️ Intelligence Configuration (The Nexus Core)
+Configure your AI preferences in **System Config**:
+- **Providers:** Choose between Gemini (Native) or OpenRouter (External).
+- **Control Mode:** Toggle between "Supervised" and "Fully Autonomous" operation.
+- **Image Pipeline:** Nexus generates prompts designed to be fulfilled via Google Drive assets or local media libraries.
 
 ## 📦 Deployment & Configuration
 
 ### Prerequisites
 1. **Firebase Project:** Enable Firestore and Google Authentication.
-2. **LinkedIn App:** Create a developer app at [LinkedIn Developers](https://www.linkedin.com/developers/) to get your Client ID/Secret.
-3. **Meta App:** Create a Facebook App for Instagram Graph API at [Meta for Developers](https://developers.facebook.com/).
+2. **LinkedIn/Meta Apps:** Configure developer portal redirects to `${APP_URL}/api/auth/linkedin/callback` and `${APP_URL}/api/auth/meta/callback`.
+3. **Google Drive (Optional):** Define access scopes if using the AI as an asset coordinator.
 
 ### Environment Setup
 Create a `.env` file based on `.env.example`:
 ```env
 GEMINI_API_KEY="your-gemini-key"
-REPLICATE_API_TOKEN="your-replicate-key"
-
-# Social Auth
-LINKEDIN_CLIENT_ID="your-client-id"
-LINKEDIN_CLIENT_SECRET="your-client-secret"
-META_APP_ID="your-app-id"
-META_APP_SECRET="your-app-secret"
-
-# Ads API
-GOOGLE_ADS_DEVELOPER_TOKEN="your-dev-token"
-GOOGLE_ADS_REFRESH_TOKEN="your-refresh-token"
+OPENROUTER_API_KEY="your-openrouter-key"
+VITE_AI_PROVIDER="openrouter"
+VITE_AI_MODEL_ID="google/gemini-2.0-flash-lite-001"
 ```
 
 ### Running Locally

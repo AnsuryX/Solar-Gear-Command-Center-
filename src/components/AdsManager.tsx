@@ -114,18 +114,31 @@ export default function AdsManager() {
           <h1 className="text-6xl font-serif font-bold text-solar-forest tracking-tighter">Engine Room</h1>
           <p className="text-solar-sage font-medium uppercase tracking-[0.2em] text-[10px] mt-1 italic">Doha & Kenya Strategic Growth Hub</p>
         </div>
-        <div className="flex gap-4">
-           <button className="bg-white border border-solar-border px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-solar-paper transition-all flex items-center gap-3">
-             <Settings2 className="w-4 h-4 text-solar-sage" />
-             Parameters
+        <div className="flex flex-wrap gap-4">
+           <button 
+             onClick={() => {
+               const mode = localStorage.getItem('auto_ads_mode') === 'true';
+               localStorage.setItem('auto_ads_mode', String(!mode));
+               toast.success(`Search AI Auto-Pilot: ${!mode ? 'Engaged' : 'Standby'}`);
+               window.location.reload(); // Refresh to update state easily for demo
+             }}
+             className={cn(
+               "px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-3 border",
+               localStorage.getItem('auto_ads_mode') === 'true' 
+                 ? "bg-solar-amber text-white border-solar-amber shadow-solar-amber/20" 
+                 : "bg-white text-solar-sage border-solar-border hover:bg-solar-paper"
+             )}
+           >
+             <Zap className={cn("w-4 h-4", localStorage.getItem('auto_ads_mode') === 'true' ? "fill-current animate-pulse" : "")} />
+             {localStorage.getItem('auto_ads_mode') === 'true' ? 'Auto-Pilot Engaged' : 'Enable Auto-Growth'}
            </button>
            <button 
              onClick={handleLaunchCampaign}
              disabled={isGenerating}
              className="bg-solar-forest text-white px-10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-solar-forest/20 hover:-translate-y-1 transition-all flex items-center gap-3 disabled:opacity-50"
            >
-             <Plus className="w-5 h-5" />
-             {isGenerating ? 'Analyzing Market...' : 'Launch Campaign'}
+             <Megaphone className="w-5 h-5 line-through decoration-solar-amber" />
+             {isGenerating ? 'Analyzing Market...' : 'Direct Tactical Deploy'}
            </button>
         </div>
       </header>

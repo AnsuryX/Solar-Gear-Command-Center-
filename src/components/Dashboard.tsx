@@ -23,6 +23,8 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { motion } from 'motion/react';
+import { toast } from 'react-hot-toast';
+import { runAutonomousCycle } from '../services/contentQueueService';
 import { 
   BarChart, 
   Bar, 
@@ -86,8 +88,21 @@ export default function Dashboard() {
           </p>
         </div>
         
-        <div className="flex gap-4">
-          <button className="bg-solar-forest text-white px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-solar-forest/20 hover:-translate-y-1 transition-all flex items-center gap-3">
+        <div className="flex flex-wrap gap-4">
+          <button 
+            onClick={() => {
+              const id = toast.loading("Nexus is initializing autonomous intelligence...");
+              runAutonomousCycle("Expand commercial solar footprint in East Africa while highlighting sustainable engineering excellence.")
+                .then(() => toast.success("Autonomous cycle deployed successully!", { id }))
+                .catch(() => toast.error("Intelligence failure. Check system logs.", { id }));
+            }}
+            className="bg-solar-amber text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-solar-amber/20 hover:-translate-y-1 transition-all flex items-center gap-3 group"
+          >
+            <Zap className="w-5 h-5 group-hover:animate-pulse" />
+            Autonomous Pilot
+          </button>
+          
+          <button className="bg-solar-forest text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-solar-forest/20 hover:-translate-y-1 transition-all flex items-center gap-3">
             Strategy Hub
             <Plus className="w-4 h-4" />
           </button>

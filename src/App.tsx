@@ -28,6 +28,7 @@ import Dashboard from './components/Dashboard';
 import ContentCalendar from './components/ContentCalendar';
 import AIStudio from './components/AIStudio';
 import AdsManager from './components/AdsManager';
+import SystemSettings from './components/SystemSettings';
 
 type View = 'dashboard' | 'calendar' | 'ai' | 'ads' | 'settings';
 
@@ -96,10 +97,10 @@ export default function App() {
   }
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
-    { id: 'ai', label: 'AI Content', icon: PlusSquare },
-    { id: 'ads', label: 'Paid Ads', icon: Megaphone },
+    { id: 'dashboard', label: 'Command Hub', icon: LayoutDashboard },
+    { id: 'calendar', label: 'Live Pipeline', icon: CalendarIcon },
+    { id: 'ai', label: 'Intelligence Studio', icon: PlusSquare },
+    { id: 'ads', label: 'Growth Engine', icon: Megaphone },
   ];
 
   return (
@@ -197,18 +198,17 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-4 pointer-events-auto">
-            <div className="flex -space-x-2">
-              {[1, 2].map(i => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-solar-paper bg-solar-border flex items-center justify-center overflow-hidden">
-                  <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="teammate" />
-                </div>
-              ))}
-              <div className="w-8 h-8 rounded-full border-2 border-solar-paper bg-white flex items-center justify-center text-[10px] font-bold text-solar-sage">
-                +4
-              </div>
-            </div>
-            <button className="h-10 w-10 flex items-center justify-center rounded-2xl border border-solar-border bg-white text-solar-forest shadow-sm hover:shadow-md transition-all">
+            <button 
+              onClick={() => setActiveView('settings')}
+              className={cn(
+                "h-12 px-5 flex items-center gap-3 rounded-2xl border transition-all shadow-sm font-bold text-[10px] uppercase tracking-widest",
+                activeView === 'settings' 
+                  ? "bg-solar-forest text-white border-solar-forest" 
+                  : "bg-white text-solar-forest border-solar-border hover:shadow-md"
+              )}
+            >
               <Settings className="w-4 h-4" />
+              System Config
             </button>
           </div>
         </header>
@@ -227,6 +227,7 @@ export default function App() {
               {activeView === 'calendar' && <ContentCalendar />}
               {activeView === 'ai' && <AIStudio />}
               {activeView === 'ads' && <AdsManager />}
+              {activeView === 'settings' && <SystemSettings />}
             </motion.div>
           </AnimatePresence>
         </div>
