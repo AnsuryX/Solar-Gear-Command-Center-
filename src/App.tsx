@@ -29,8 +29,9 @@ import ContentCalendar from './components/ContentCalendar';
 import AIStudio from './components/AIStudio';
 import AdsManager from './components/AdsManager';
 import SystemSettings from './components/SystemSettings';
+import Analytics from './components/Analytics';
 
-type View = 'dashboard' | 'calendar' | 'ai' | 'ads' | 'settings';
+type View = 'dashboard' | 'calendar' | 'ai' | 'ads' | 'settings' | 'analytics';
 
 export default function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -101,6 +102,7 @@ export default function App() {
     { id: 'calendar', label: 'Live Pipeline', icon: CalendarIcon },
     { id: 'ai', label: 'Intelligence Studio', icon: PlusSquare },
     { id: 'ads', label: 'Growth Engine', icon: Megaphone },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
   return (
@@ -227,6 +229,7 @@ export default function App() {
               {activeView === 'calendar' && <ContentCalendar />}
               {activeView === 'ai' && <AIStudio />}
               {activeView === 'ads' && <AdsManager />}
+              {activeView === 'analytics' && <Analytics />}
               {activeView === 'settings' && <SystemSettings />}
             </motion.div>
           </AnimatePresence>

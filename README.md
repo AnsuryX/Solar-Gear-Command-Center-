@@ -29,8 +29,14 @@ Nexus orchestrates 7-day content schedules with multi-platform intelligence.
 - **Atmospheric Pulse:** Logic that triggers Cooling Package ads when heatwaves are detected in Nairobi or Doha.
 - **Logistics Guard:** Automatically pauses specific search strings if inventory for panels or inverters falls below threshold.
 
-### 4. Executive reporting (The Board Report)
+### 4. Growth Analytics (GA4 Synthesis)
+- **Direct GA4 Hook:** Nexus connects directly to your Google Analytics 4 properties to fetch traffic and conversion data.
+- **Autonomous Goal Synthesis:** Instead of just showing charts, the AI analyzes traffic patterns to suggest "Growth Reversals"—tactical shifts in strategy to maximize ROI.
+- **Unified Google Auth:** One single handshake grants Nexus access to both local business updates (GMB) and global traffic data (GA4).
+
+### 5. Executive reporting (The Board Report)
 - **Zero-Touch Analysis:** Nexus synthesizes platform data into professional "Board Reports" that justify marketing spend without a manager's manual input.
+- **Narrative AI:** Converts raw numbers into executive summaries suitable for stakeholders.
 
 ## ⚙️ Intelligence Configuration (The Nexus Core)
 Configure your AI preferences in **System Config**:

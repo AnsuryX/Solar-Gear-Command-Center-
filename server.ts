@@ -19,27 +19,34 @@ const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
 const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
 const META_APP_ID = process.env.META_APP_ID;
 const META_APP_SECRET = process.env.META_APP_SECRET;
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID; // Reusing for GMB OAuth
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID; // Reusing for GMB and GA4 OAuth
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET;
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
-// --- Google Business Profile (GMB) Auth ---
-app.get('/api/auth/gmb/url', (req, res) => {
-  const redirectUri = `${APP_URL}/api/auth/gmb/callback`;
+// --- Google Auth (GMB & GA4) ---
+app.get('/api/auth/google/url', (req, res) => {
+  const { scope } = req.query;
+  const redirectUri = `${APP_URL}/api/auth/google/callback`;
+  
+  const defaultScopes = [
+    'https://www.googleapis.com/auth/business.manage',
+    'https://www.googleapis.com/auth/analytics.readonly'
+  ];
+
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID!,
     redirect_uri: redirectUri,
     response_type: 'code',
-    scope: 'https://www.googleapis.com/auth/business.manage',
+    scope: scope ? (scope as string) : defaultScopes.join(' '),
     access_type: 'offline',
     prompt: 'consent'
   });
   res.json({ url: `https://accounts.google.com/o/oauth2/v2/auth?${params}` });
 });
 
-app.get('/api/auth/gmb/callback', async (req, res) => {
+app.get('/api/auth/google/callback', async (req, res) => {
   const { code } = req.query;
-  const redirectUri = `${APP_URL}/api/auth/gmb/callback`;
+  const redirectUri = `${APP_URL}/api/auth/google/callback`;
 
   try {
     const response = await axios.post('https://oauth2.googleapis.com/token', {
@@ -56,15 +63,32 @@ app.get('/api/auth/gmb/callback', async (req, res) => {
       <html>
         <body>
           <script>
-            window.opener.postMessage({ type: 'OAUTH_SUCCESS', platform: 'gmb', token: '${access_token}', refreshToken: '${refresh_token}' }, '*');
+            window.opener.postMessage({ type: 'OAUTH_SUCCESS', platform: 'google', token: '${access_token}', refreshToken: '${refresh_token}' }, '*');
             window.close();
           </script>
-          <p>Google Business Linked! Closing...</p>
+          <p>Google Account Linked! Closing...</p>
         </body>
       </html>
     `);
   } catch (error) {
     res.status(500).send('Google Auth Failed');
+  }
+});
+
+// --- GA4 Data API ---
+app.post('/api/analytics/report', async (req, res) => {
+  const { token, propertyId } = req.body;
+  try {
+    const response = await axios.post(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, {
+      dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+      dimensions: [{ name: 'date' }],
+      metrics: [{ name: 'activeUsers' }, { name: 'sessions' }, { name: 'conversions' }]
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    res.json(response.data);
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', message: "GA4 Data fetch failed." });
   }
 });
 

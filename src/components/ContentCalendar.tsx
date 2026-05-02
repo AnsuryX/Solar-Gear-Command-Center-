@@ -67,9 +67,16 @@ export default function ContentCalendar() {
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'OAUTH_SUCCESS') {
         const { platform, token } = event.data;
-        localStorage.setItem(`${platform}_token`, token);
-        setConnections(prev => ({ ...prev, [platform]: true }));
-        toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} linked successfully!`);
+        if (platform === 'google') {
+          localStorage.setItem('google_token', token);
+          localStorage.setItem('gmb_token', token);
+          setConnections(prev => ({ ...prev, gmb: true }));
+          toast.success("Google Ecosystem (GA4 & GMB) linked!");
+        } else {
+          localStorage.setItem(`${platform}_token`, token);
+          setConnections(prev => ({ ...prev, [platform]: true }));
+          toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} linked successfully!`);
+        }
       }
     };
     window.addEventListener('message', handleMessage);
@@ -104,13 +111,17 @@ export default function ContentCalendar() {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
-  const handleConnect = async (platform: 'linkedin' | 'meta' | 'gmb') => {
+  const handleConnect = async (platform: 'linkedin' | 'meta' | 'google') => {
     try {
-      const res = await fetch(`/api/auth/${platform}/url`);
+      const scope = platform === 'google' 
+        ? 'https://www.googleapis.com/auth/business.manage https://www.googleapis.com/auth/analytics.readonly'
+        : undefined;
+        
+      const res = await fetch(`/api/auth/${platform}/url` + (scope ? `?scope=${encodeURIComponent(scope)}` : ''));
       const { url } = await res.json();
-      window.open(url, 'oauth_popup', 'width=600,height=700');
+      window.open(url, 'Connect Service', 'width=600,height=700');
     } catch (error) {
-      toast.error(`Failed to initiate ${platform} handshake`);
+      toast.error(`Handshake failed. Interface signal degraded.`);
     }
   };
 
@@ -252,7 +263,7 @@ export default function ContentCalendar() {
          </button>
 
          <button 
-           onClick={() => !connections.gmb && handleConnect('gmb')}
+           onClick={() => !connections.gmb && handleConnect('google')}
            className={cn(
              "flex-shrink-0 flex items-center gap-3 px-6 py-2.5 rounded-full border shadow-sm transition-all",
              connections.gmb ? "bg-white border-solar-border" : "bg-solar-paper border-solar-border hover:bg-solar-border"
