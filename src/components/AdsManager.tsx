@@ -42,6 +42,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+import { generateAdCampaigns } from '../services/geminiService';
 
 const chartData = [
   { name: 'On-grid', conversions: 45, roas: 4.8 },
@@ -55,6 +56,7 @@ export default function AdsManager() {
   const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
   const [weatherData, setWeatherData] = useState<any[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -66,45 +68,34 @@ export default function AdsManager() {
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setCampaigns(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
-
-    fetchWeatherData();
-    fetchInventory();
+    }, (error) => handleFirestoreError(error, OperationType.GET, 'campaigns'));
 
     return () => unsubscribe();
   }, []);
 
-  const fetchWeatherData = async () => {
+  const handleLaunchCampaign = async () => {
+    setIsGenerating(true);
+    const id = toast.loading("AI Market Analyst is designing your presence...");
+    
     try {
-      const res = await fetch('/api/weather');
-      const data = await res.json();
-      setWeatherData(data);
-    } catch (e) {}
-  };
+      const concepts = await generateAdCampaigns("High-efficiency solar solutions for commercial hubs in Nairobi and Doha. Focus: High ROAS, clean energy aesthetics.");
+      
+      const promises = concepts.map((concept: any) => 
+        addDoc(collection(db, 'campaigns'), {
+          ...concept,
+          platform: 'google_ads',
+          performance: { spend: 0, clicks: 0, conversions: 0 },
+          authorId: auth.currentUser?.uid,
+          createdAt: serverTimestamp(),
+        })
+      );
 
-  const fetchInventory = async () => {
-    try {
-      const res = await fetch('/api/inventory');
-      const data = await res.json();
-      setInventory(data);
-    } catch (e) {}
-  };
-
-  const createDummyCampaign = async () => {
-    if (!auth.currentUser) return;
-    try {
-      await addDoc(collection(db, 'campaigns'), {
-        name: `Solar Package ${new Date().toLocaleDateString()}`,
-        platform: 'google_ads',
-        status: 'active',
-        budget: 50.00,
-        performance: { spend: 0, clicks: 0, conversions: 0 },
-        authorId: auth.currentUser.uid,
-        createdAt: serverTimestamp(),
-      });
-      toast.success("New Google Ads campaign synchronized");
+      await Promise.all(promises);
+      toast.success("New strategic campaigns deployed to Engine Room", { id });
     } catch (error) {
-       handleFirestoreError(error, OperationType.WRITE, 'campaigns');
+      toast.error("Strategy generation failed", { id });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -129,11 +120,12 @@ export default function AdsManager() {
              Parameters
            </button>
            <button 
-             onClick={createDummyCampaign}
-             className="bg-solar-forest text-white px-10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-solar-forest/20 hover:-translate-y-1 transition-all flex items-center gap-3"
+             onClick={handleLaunchCampaign}
+             disabled={isGenerating}
+             className="bg-solar-forest text-white px-10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-solar-forest/20 hover:-translate-y-1 transition-all flex items-center gap-3 disabled:opacity-50"
            >
              <Plus className="w-5 h-5" />
-             Launch Campaign
+             {isGenerating ? 'Analyzing Market...' : 'Launch Campaign'}
            </button>
         </div>
       </header>

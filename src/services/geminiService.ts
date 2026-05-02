@@ -44,6 +44,19 @@ export const generateWeeklyStrategy = async (brandContext: string): Promise<Week
   }
 };
 
+export const generateAdCampaigns = async (context: string) => {
+  const prompt = `Based on this solar context: ${context}, create 3 Google Ads campaign concepts. 
+    Return a JSON array of objects: { name, budget, estimatedReach, status: 'Active', roi: '...' }`;
+    
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: prompt,
+  });
+  const text = response.text || '';
+  const jsonMatch = text.match(/\[[\s\S]*\]/);
+  return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+};
+
 export const generateVisionNarrative = async (imageAnalysis: string) => {
   const prompt = `Based on this vision analysis: ${imageAnalysis}, write three distinct social media posts: 
     1. LinkedIn (Executive Case Study)
